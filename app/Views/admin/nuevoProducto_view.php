@@ -67,7 +67,7 @@ $id = $session->get('id');
 
                 <div class="mb-2">
                     <label>Nombre</label>
-                    <input name="nombre" type="text" minlength="5" maxlength="20" required>
+                    <input name="nombre" type="text" minlength="5" maxlength="50" required>
                     <?= $validation->getError('nombre') ? "<div class='alert alert-danger mt-2'>{$validation->getError('nombre')}</div>" : "" ?>
                 </div>
             </div>

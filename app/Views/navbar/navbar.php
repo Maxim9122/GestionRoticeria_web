@@ -15,7 +15,7 @@
 </head>
 
 <style>
-  .cart-container {
+.cart-container {
     position: relative;
     display: inline-block;
 }
@@ -25,11 +25,12 @@
     position: absolute;
     right: 0;
     background: white;
-    border: 1px solid #ddd;
+    border: 3px solid #00f0ff; /* azul marino fluor */
     padding: 10px;
     min-width: 200px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 17px rgba(57, 120, 139, 0.7);
     z-index: 1000;
+    border-radius: 8px; /* opcional, para suavizar el borde */
 }
 
 .cart-container:hover .cart-dropdown {
@@ -47,14 +48,6 @@
     border-bottom: none;
 }
 
-.resaltado {
-    color: orange;
-    border: 2px solid orange;
-    padding: 10px;
-    display: inline-block;
-    border-radius: 5px;
-    text-align: center;
-}
 </style>
 
 <body>
@@ -105,6 +98,7 @@
                               <span class="item-name"><?= esc($item['name']) ?></span>
                               <span class="item-quantity"><?= esc($item['qty']) ?></span>
                           </div>
+                          <hr>
                       <?php endforeach; ?>
                   <?php endif; ?>
               </div>

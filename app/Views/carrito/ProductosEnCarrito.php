@@ -121,7 +121,7 @@ $gran_total = isset($gran_total) ? $gran_total : 0; // Si $gran_total no está d
             <td>Nombre</td>
             <td class="ocultar-en-movil">Precio</td>
             <td>Cantidad</td>
-            <td>Aderezos</td> <!-- Nueva columna para aderezos -->
+            <td>Aderezo/ Adicion/ Unidades</td> <!-- Nueva columna para aderezos -->
             <td>Subtotal</td>
             <td>Eliminar?</td>
         </tr>
@@ -178,15 +178,36 @@ $gran_total = isset($gran_total) ? $gran_total : 0; // Si $gran_total no está d
                 
                     <?php 
                         if (!empty($categorias[$item['id']]) && 
-                            (strtolower(trim($categorias[$item['id']])) == 'hamburguesas' || strtolower(trim($categorias[$item['id']])) == 'sand_mila')): 
+                            (strtolower(trim($categorias[$item['id']])) == 'hamburguesas' || 
+                            strtolower(trim($categorias[$item['id']])) == 'sand_mila' || 
+                            strtolower(trim($categorias[$item['id']])) == 'lomitos')): 
                     ?>
                         <input type="text" 
                             name="cart[<?= $item['id'] ?>][options][aderezos]" 
                             id="aderezos_<?= $item['id'] ?>" 
                             value="<?= isset($item['options']['aderezos']) ? $item['options']['aderezos'] : '' ?>"
                             placeholder="Ej: Mayonesa, mostaza"
-                            style="width: 150px; padding: 5px;">
-                    <?php else: ?>
+                            style="width: 185px; padding: 5px;">
+
+                    <?php elseif (strtolower(trim($categorias[$item['id']])) == 'pizzas'): ?>
+                       
+                        <input type="text" 
+                            name="cart[<?= $item['id'] ?>][options][aderezos]" 
+                            id="aderezos_<?= $item['id'] ?>" 
+                            value="<?= isset($item['options']['aderezos']) ? $item['options']['aderezos'] : '' ?>"
+                            placeholder="Adicion ej: +huevo,+calabreza"
+                            style="width: 185px; padding: 5px;">
+
+                    <?php elseif (strtolower(trim($categorias[$item['id']])) == 'empanadas_mixtas'): ?>
+                       
+                       <input type="text" 
+                           name="cart[<?= $item['id'] ?>][options][aderezos]" 
+                           id="aderezos_<?= $item['id'] ?>" 
+                           value="<?= isset($item['options']['aderezos']) ? $item['options']['aderezos'] : '' ?>"
+                           placeholder="Unidades ej: 2 carne, 4 jyq"
+                           style="width: 185px; padding: 5px;">
+
+                    <?php else:?>
                         -
                     <?php endif; ?>
 

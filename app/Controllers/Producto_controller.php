@@ -121,7 +121,7 @@ class Producto_controller extends Controller{
                 'descripcion' => $this->request->getVar('descripcion'),
                 'eliminado' => "No" 
             ]);  
-            session()->setFlashdata('msg','Producto Creado con Éxito!');
+            session()->setFlashdata('msg','Categoria Creada con Éxito!');
              return redirect()->to(base_url('Lista_Productos'));
         }
     }

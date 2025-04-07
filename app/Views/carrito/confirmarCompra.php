@@ -69,8 +69,9 @@ endif;
                     <td style="color: rgb(192, 250, 214);"><strong>Tipo de Compra:</strong></td>
                     <td>
                         <select name="tipo_compra" id="tipoCompra" class="selector">
-                            <option value="Fiado">Fiado</option> 
-                            <option value="Compra">Compra</option>                        
+                        <option value="Compra">Compra</option>   
+                        <option value="Fiado">Fiado</option> 
+                                                   
                         </select>                    
                     </td>
                 </tr>                

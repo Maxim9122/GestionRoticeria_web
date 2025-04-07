@@ -32,7 +32,7 @@ $id = $session->get('id'); ?>
                 </div>
                 <div class="form-group">
                     <label>Nombre</label>
-                    <input name="nombre" type="text" class="form-control" placeholder="nombre" value="<?php echo $data['nombre'] ?>" required minlength="5" maxlength="20">
+                    <input name="nombre" type="text" class="form-control" placeholder="nombre" value="<?php echo $data['nombre'] ?>" required minlength="5" maxlength="50">
                     <?php if ($validation->getError('nombre')) { ?>
                         <div class='alert alert-danger mt-2'><?= $validation->getError('nombre'); ?></div>
                     <?php } ?>
