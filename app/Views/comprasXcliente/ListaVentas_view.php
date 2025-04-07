@@ -78,7 +78,7 @@
              <td><?php echo $vta['nombre_vendedor']; ?></td>
              <td><?php echo $vta['tipo_compra']; ?></td>
              <td><?php echo $vta['estado']; ?></td>
-             <td>$<?php echo $vta['total_bonificado']; ?></td>
+             <td>$<?php echo $vta['total_venta']; ?></td>
              <td><?php echo $vta['fecha'];?></td>
              <td><?php echo $vta['hora']; ?></td>
              <td><?php echo $vta['tipo_pago']; ?></td>
@@ -113,7 +113,7 @@
 
               </td>
               <?php if($vta['estado'] != 'Error_factura'){?>
-              <?php $TotalRecaudado = $TotalRecaudado + $vta['total_bonificado']; ?>
+              <?php $TotalRecaudado = $TotalRecaudado + $vta['total_venta']; ?>
               <?php } ?> 
             </tr>
          <?php endforeach; ?>

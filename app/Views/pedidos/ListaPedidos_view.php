@@ -29,7 +29,7 @@
 
 <div style="width: 100%;">
     <br>
-<h2 class="textoColor" align="center">Listado de Pedidos para Hoy</h2>
+<h2 class="textoColor" align="center">Listado de Pedidos Pendientes</h2>
         <br>
   <div style="text-align: end;">
   
@@ -56,7 +56,7 @@
              <th>Total</th>
              <th>Fecha Registro</th>
              <th>Hora Reg.</th>
-             <th>Fecha Entrega</th>
+             <th>Modo Compra</th>
              <th>Estado</th>                          
              <th>Acciones</th>
           </tr>
@@ -69,10 +69,10 @@
         <td><?php echo $p['nombre_cliente']; ?></td>
         <td><?php echo $p['telefono']; ?></td>
         <td><?php echo $p['nombre_usuario'];?></td>
-        <td>$<?php echo $p['total_bonificado'];?></td>
+        <td>$<?php echo $p['total_venta'];?></td>
         <td><?php echo $p['fecha'];?></td>
         <td><?php echo $p['hora'];?></td>
-        <td><?php echo $p['fecha_pedido'];?></td>
+        <td><?php echo $p['modo_compra'];?></td>
         <td><?php echo $p['estado'];?></td>
 
         <!-- Formulario de acciones por cada pedido -->

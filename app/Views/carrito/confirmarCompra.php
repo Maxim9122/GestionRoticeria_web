@@ -66,12 +66,11 @@ endif;
                     </td>
                 </tr>
                 <tr>
-                    <td style="color: rgb(192, 250, 214);"><strong>Tipo de Compra:</strong></td>
+                    <td style="color: rgb(192, 250, 214);"><strong>Modo de Compra:</strong></td>
                     <td>
-                        <select name="tipo_compra" id="tipoCompra" class="selector">
-                        <option value="Compra">Compra</option>   
-                        <option value="Fiado">Fiado</option> 
-                                                   
+                        <select name="modo_compra" id="tipoCompra" class="selector">
+                            <option value="Compra">Compra</option>   
+                            <option value="Fiado">Fiado</option>                                                    
                         </select>                    
                     </td>
                 </tr>                
@@ -163,15 +162,55 @@ endif;
         const pagoTransferencia = document.getElementById("pagoTransferencia");
         const pagoEfectivo = document.getElementById("pagoEfectivo");
         const granTotal = <?php echo $gran_total; ?>;
+
+        pagoEfectivo.value = granTotal.toFixed(2); // Mostrar total inicial
+
         
         function calcularMontoEfectivo() {
             const transferencia = parseFloat(pagoTransferencia.value) || 0;
-            const efectivo = granTotal - transferencia;
-            pagoEfectivo.value = efectivo > 0 ? efectivo.toFixed(2) : "0.00";
+
+            if (transferencia > granTotal) {
+                Swal.fire({
+                    title: "Monto inválido",
+                    text: "El monto en transferencia no puede superar el total de la compra.",
+                    icon: "error",
+                    confirmButtonText: "Aceptar"
+                }).then(() => {
+                    pagoTransferencia.value = "";
+                    pagoEfectivo.value = granTotal.toFixed(2);
+                });
+            } else {
+                const efectivo = granTotal - transferencia;
+                pagoEfectivo.value = efectivo.toFixed(2);
+            }
         }
         
         pagoTransferencia.addEventListener("input", calcularMontoEfectivo);
     });
+
+    //Antes de guardar el pedido confirma
+    document.addEventListener("DOMContentLoaded", function () {
+    const formulario = document.querySelector("form.form-signin");
+
+    formulario.addEventListener("submit", function (e) {
+        e.preventDefault(); // Prevenir envío inmediato
+
+        Swal.fire({
+            title: "¿Registrar Pedido?",
+            text: "¿Deseás registrar el Pedido?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Sí, Registrar",
+            cancelButtonText: "No, Volver"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                formulario.submit(); // Enviar si acepta
+            }
+        });
+    });
+
+    // (el resto de tu script que ya estaba)
+});
 </script>
 
 <style>

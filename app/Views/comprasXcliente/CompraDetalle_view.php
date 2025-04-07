@@ -114,6 +114,7 @@
           <th>ID Producto</th>
           <th>Nombre</th>
           <th>Cantidad Comprada</th>
+          <th>Aclaraciones</th>
           <th>Precio Unitario</th>
           <th>Total x Producto</th>          
         </tr>
@@ -125,6 +126,7 @@
               <td><?php echo $vta['id']; ?></td>
               <td><?php echo $vta['nombre']; ?></td>
               <td><?php echo $vta['cantidad']; ?></td>
+              <td><?php echo $vta['aclaraciones']; ?></td>
               <td><?php echo $vta['precio']; ?></td>
               <td><?php echo $vta['total']; ?></td>
               

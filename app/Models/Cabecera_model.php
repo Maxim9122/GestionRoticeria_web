@@ -5,7 +5,7 @@ class Cabecera_model extends Model
 {
 	protected $table = 'ventas_cabecera';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['aderezo','id_cae','id_usuario','fecha', 'hora_registro', 'hora' ,'id_cliente', 'total_venta', 'tipo_pago' , 'total_bonificado', 'tipo_compra', 'fecha_pedido','hora_entrega' , 'estado'];
+    protected $allowedFields = ['nombre_prov_client','costo_envio','monto_efectivo', 'monto_transfer','modo_compra','id_cae','id_usuario','fecha', 'hora_registro', 'hora' ,'id_cliente', 'total_venta', 'tipo_pago', 'tipo_compra', 'fecha_pedido','hora_entrega' , 'estado'];
 
     public function getVentasCabecera(){
       $db = db_connect();
@@ -37,8 +37,7 @@ class Cabecera_model extends Model
                 WHEN u.tipo_compra = 'Pedido' THEN u.hora_entrega
                 ELSE u.hora 
             END) AS hora, 
-            u.tipo_pago, 
-            u.total_bonificado
+            u.tipo_pago            
         ");
         $builder->join('cliente c', 'u.id_cliente = c.id_cliente');
         $builder->join('usuarios v', 'u.id_usuario = v.id');
@@ -79,7 +78,7 @@ class Cabecera_model extends Model
         $db = db_connect();
         // Construir la consulta con join y filtros
         $builder = $db->table($this->table . ' u');
-        $builder->select('u.id, d.nombre, d.apellido, d.telefono, d.direccion, u.total_venta, u.fecha, u.hora, u.tipo_pago, u.total_bonificado');
+        $builder->select('u.id, d.nombre, d.apellido, d.telefono, d.direccion, u.total_venta, u.fecha, u.hora, u.tipo_pago');
         $builder->where('u.id_cliente', $idCliente); // Filtrar por cliente
         $builder->where('u.fecha', $fechaHoy);       // Filtrar por fecha
         $builder->join('usuarios d', 'u.id_cliente = d.id'); // Relación con usuarios
@@ -99,7 +98,8 @@ class Cabecera_model extends Model
         d.nombre, 
         u.cantidad, 
         u.precio, 
-        u.total, 
+        u.total,
+        u.aclaraciones, 
         c.id_cae, 
         c.cae, 
         c.vto_cae
@@ -129,7 +129,18 @@ class Cabecera_model extends Model
      
          // Construir la consulta con los joins necesarios
          $builder = $db->table($this->table . ' u');
-         $builder->select('u.id, c.nombre AS nombre_cliente, c.telefono, u.total_venta, u.fecha, u.hora, u.tipo_pago, u.total_bonificado, u.estado, u.fecha_pedido, u.hora_entrega, usuarios.nombre AS nombre_usuario');
+         $builder->select('u.id, 
+         u.nombre_prov_client AS nombre_cliente, 
+         c.telefono, 
+         u.total_venta, 
+         u.fecha, 
+         u.hora, 
+         u.tipo_pago, 
+         u.estado, 
+         u.fecha_pedido, 
+         u.hora_entrega,
+         u.modo_compra, 
+         usuarios.nombre AS nombre_usuario');
          $builder->join('cliente c', 'u.id_cliente = c.id_cliente'); // Relación con cliente
          $builder->join('usuarios usuarios', 'u.id_usuario = usuarios.id'); // Relación con usuario
          $builder->where('u.tipo_compra', 'Pedido');

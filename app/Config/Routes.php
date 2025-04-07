@@ -157,6 +157,8 @@ $routes->get('PDF/(:num)', 'Carrito_controller::FacturaAdmin/$1');
 $routes->get('turnos/(:num)', 'Carrito_controller::ListaTurnosCabeceraCliente/$1');
 $routes->get('factura/(:num)', 'Carrito_controller::FacturaCliente/$1');
 
+$routes->get('descargar_ticket', 'Carrito_controller::descargar_ticket');
+
 //AFIP
 $routes->get('verificarTA','Carrito_controller::verificarTA');
 $routes->get('generarTicket', 'Carrito_controller::facturar');

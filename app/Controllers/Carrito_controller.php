@@ -397,143 +397,56 @@ public function productosAgregados() {
     return redirect()->to(base_url('catalogo'));
     }
     //id del vendedor
-    $id_usuario = $session->get('id');
+    $id_usuario = $session->get('id');    
 
-    //id del cliente seleccionado o se selecciona Consumidor final por defecto.
-    $id_cliente = $this->request->getPost('cliente_id');
-    if ($id_cliente == "Anonimo") {
-        $id_cliente = 1; // Valor por defecto si no se envía cliente_id
-    }
+    $monto_transfer = $this->request->getVar('pagoTransferencia');
+    $monto_efec = $this->request->getVar('pagoEfectivo');
+    
+    $costo_envio = $this->request->getVar('costoEnvio');
 
-
-    //Tipo de pago enviado del formulario (Transferencia o Efectivo)
-    $tipo_pago = $this->request->getPost('tipo_pago');
+    $nombre_cliente = $this->request->getVar('nombre_prov');
     //Total de la venta
     $total = $this->request->getPost('total_venta');
-       
+    
     // Establecer zona horaria y obtener fecha/hora en formato correcto
     date_default_timezone_set('America/Argentina/Buenos_Aires');
     $hora = date('H:i:s'); // Formato TIME
     $fecha = date('d-m-Y'); // Formato DATE
     //Rescato el tipo de compra (Pedido o Compra_Normal)
-    $tipo_compra = $this->request->getVar('tipo_compra');
+    $tipo_compra = 'Pedido';
+    //Modo de compra (fiado o compra)
+    $modo_compra = $this->request->getVar('modo_compra');
     //$tipo_compra = $this->request->getPost('tipo_compra_input');
-    
+    //print_r($tipo_compra);exit;
     //Si no se selecciono una fecha se asigna la fecha de hoy por defecto para el pedido.
     $fecha_pedido = $this->request->getPost('fecha_pedido_input');
     if (!$fecha_pedido){
         $fecha_pedido = date('d-m-Y');
     }
-    //print_r($tipo_compra);
-    //exit;
+ 
     //Formateamos la fecha del pedido al formato dia-mes-año
     $fecha_pedido_formateada = date('d-m-Y', strtotime($fecha_pedido));   
-    
-    $id_pedido = $this->request->getPost('id_pedido');
-    // Si se encontro un id, eliminar el pedido anterior porque se va crear uno nuevo modificado y restaura el stock.
-    if ($id_pedido) {
+ 
+
+    // Guardar la nueva cabecera del Pedido (Nuevo o Modidicado segun sea) utiliza el mismo carrito.   
         
-        $VentaDetalle_model = new VentaDetalle_model();
-        $Producto_model = new Productos_model();     
-        
-
-        // Eliminar los detalles y la cabecera de la venta anterior
-        $VentaDetalle_model->where('venta_id', $id_pedido)->delete();
-        $Cabecera_model = new Cabecera_model();
-        $Cabecera_model->delete($id_pedido);
-
-        // Después de guardar el pedido (cuando ya no se necesiten los datos de la sesión)
-        $session = session();
-        $session->remove(['id_cliente_pedido', 'id_pedido', 'fecha_pedido', 'tipo_compra', 'tipo_pago']);
-    }
-    
-
-    //Identifico si es una compra para facturar si este campo viene con el dato "Factura"
-    $facturacion = $this->request->getPost('tipo_proceso');
-    //Si el tipo de proceso es para facturar se manda a otra funcion.
-    if($facturacion == "factura"){
-        //print_r($facturacion);
-        //exit;
-        // Guardar cabecera de la venta para Facturar, mientras el estado esta para Verificar.
         $cabecera_model = new Cabecera_model();
         $ventas_id = $cabecera_model->save([
             'fecha'        => $fecha,
             'hora'         => $hora,
-            'id_cliente'   => $id_cliente,
+            'fecha_pedido' => $fecha,
+            'id_cliente'   => 1,
+            'nombre_prov_client' => $nombre_cliente,
             'id_usuario'   => $id_usuario,
-            'total_venta'  => $total,
-            'tipo_pago'    => $tipo_pago,
-            'total_bonificado' => $total_conDescuento,
-            'tipo_compra' => $tipo_compra,
-            'estado' => 'Sin_Facturar'
-        ]);
-
-        // Obtener ID de la nueva cabecera guardada
-        $id_cabecera = $cabecera_model->getInsertID();
-
-        // Guardar detalles de la venta si el carrito no está vacío
-    if ($cart):
-        foreach ($cart->contents() as $item):
-            $VentaDetalle_model = new VentaDetalle_model();
-            $VentaDetalle_model->save([
-                'venta_id'    => $id_cabecera,
-                'producto_id' => $item['id'],
-                'cantidad'    => $item['qty'],
-                'precio'      => $item['price'],
-                'total'       => $item['subtotal'],
-            ]);
-
-            // Actualizar stock del producto
-            $Producto_model = new Productos_model();
-            $producto = $Producto_model->find($item['id']); // Asegúrate de usar el método correcto para obtener datos
-
-            if ($producto && isset($producto['stock'])) {
-                $stock_edit = $producto['stock'] - $item['qty'];
-                $Producto_model->update($item['id'], ['stock' => $stock_edit]);
-            }
-        endforeach;
-        endif;
-
-        // Limpiar el carrito
-        $cart->destroy();
-        //Una vez guardada la compra manda a verificar la factura en ARCA.
-        return redirect()->to('Carrito_controller/verificarTA/' . $id_cabecera);
-    }
-
-
-    // Guardar la nueva cabecera del Pedido (Nuevo o Modidicado segun sea) utiliza el mismo carrito.
-    if ($tipo_compra == 'Pedido') { 
-        // Guardar cabecera de la venta tipo pedido
-        $cabecera_model = new Cabecera_model();
-        $ventas_id = $cabecera_model->save([
-            'fecha'        => $fecha,
-            'hora'         => $hora,
-            'id_cliente'   => $id_cliente,
-            'id_usuario'   => $id_usuario,
-            'total_venta'  => $total,
-            'tipo_pago'    => $tipo_pago,
-            'total_bonificado' => $total_conDescuento,
-            'tipo_compra' => $tipo_compra,
-            'fecha_pedido' => $fecha_pedido_formateada,
+            'total_venta'  => $total,           
+            'modo_compra'  => $modo_compra,            
+            'tipo_compra'  => $tipo_compra,
+            'monto_efectivo' => $monto_efec,
+            'monto_transfer' => $monto_transfer,
+            'costo_envio' => $costo_envio,
             'estado' => 'Pendiente'
         ]);
-        
-    } else {
-        
-        // Guardar cabecera de la venta tipo compra normal
-        $cabecera_model = new Cabecera_model();
-        $ventas_id = $cabecera_model->save([
-            'fecha'        => $fecha,
-            'hora'         => $hora,
-            'id_cliente'   => $id_cliente,
-            'id_usuario'   => $id_usuario,
-            'total_venta'  => $total,
-            'tipo_pago'    => $tipo_pago,
-            'total_bonificado' => $total_conDescuento,
-            'tipo_compra' => $tipo_compra,
-            'estado' => 'Sin_Facturar'
-        ]);
-    }
+    
 
     // Obtener ID de la nueva cabecera guardada
     $id_cabecera = $cabecera_model->getInsertID();
@@ -546,6 +459,7 @@ public function productosAgregados() {
                 'venta_id'    => $id_cabecera,
                 'producto_id' => $item['id'],
                 'cantidad'    => $item['qty'],
+                'aclaraciones'  => $item['options']['aderezos'] ?? null,
                 'precio'      => $item['price'],
                 'total'       => $item['subtotal'],
             ]);
@@ -561,13 +475,7 @@ public function productosAgregados() {
         endforeach;
     endif;
 
-    // Limpiar el carrito y redirigir con mensaje
     $cart->destroy();
-    if ($tipo_compra == 'Pedido') {
-        session()->setFlashdata('msg', 'Pedido Guardado con Éxito!');
-        return redirect()->to('catalogo');
-    }
-
     session()->setFlashdata('msg', 'Compra Guardada con Éxito!');
     // Redirige a la vista de la factura
     return redirect()->to('Carrito_controller/generarTicket/' . $id_cabecera);
@@ -602,11 +510,13 @@ public function generarTicket($id_cabecera)
     $session = session();
     $nombreVendedor = $session->get('nombre');
     
+   /*
     //Cambia el estado del Pedido
     if($cabecera['tipo_compra'] == 'Pedido'){
 
         $ventaModel->cambiarEstado($id_cabecera, 'Sin_Facturar');
     }
+        */
     // Crear el HTML para la vista previa
     ob_start();
     ?>
@@ -665,22 +575,12 @@ public function generarTicket($id_cabecera)
     </head>
     <body>
         <div class="ticket">
-            <h3>Remito</h3>
-            <p align="center">no valido como factura</p>
-            <!-- Cabecera del ticket -->
-            <h1>MULTIRRUBRO BLASS 2</h1>
-            <p>CASTELLANO GRACIELA MAILLEN</p>
-            <p>CUIT Nro: 27-40591053-0</p>
-            <p>Domicilio: Independecia 4821 Corrientes (3400)</p>
-            <p>Cel: 3794-095020</p>
-            <p>Inicio de actividades: 01/02/2023</p>
-            <p>Ingresos Brutos: 27-40591053-0</p>
-            <p>Resp. Monotributo</p>
+            <h3>Pedido Nro: <?= $cabecera['id'] ?></h3>
+
             <hr>
 
             <!-- Información de la venta -->
             <p>Fecha: <?= ($cabecera['tipo_compra'] == 'Pedido') ? date('d-m-Y H:i:s') : $cabecera['fecha'] . ' ' . $cabecera['hora']; ?></p>
-            <p>Numero de Ticket: <?= $cabecera['id'] ?></p>
             <p>Cliente: <?= $cliente['cuil'] > 0 ? $cliente['nombre'] . ' Cuil: ' . $cliente['cuil'] : $cliente['nombre'] ?></p>
             <p>Atendido por: <?= $nombreVendedor ?></p>
             <hr>
@@ -690,27 +590,12 @@ public function generarTicket($id_cabecera)
                 <h3>Productos Adquiridos</h3>
                 <?php foreach ($detalles as $detalle): ?>
                     <div>
-                        <p><?= $productos[$detalle['producto_id']]['nombre'] ?> Cant:<?= $detalle['cantidad'] ?> x $<?= number_format($detalle['precio'], 2) ?></p>
+                        <p><?= $productos[$detalle['producto_id']]['nombre'] ?> -><?= $detalle['cantidad'] ?> x $<?= number_format($detalle['precio'], 2) ?></p>
                     </div>
                 <?php endforeach; ?>            
             </div>
-
-            <!-- Totales -->
-            <p>Subtotal sin descuentos: $<?= number_format($cabecera['total_venta'], 2) ?></p>
-            <p>Descuentos: <?= ($cabecera['tipo_pago'] == 'Efectivo') ? '$' . number_format($cabecera['total_venta'] * 0.05, 2) : '$0.00' ?></p>
-            <p>Total: $<?= number_format($cabecera['total_bonificado'], 2) ?></p>
             <hr>
-
-            <!-- Footer -->
-            <div class="footer">
-                <p>Importante:</p>
-                <p>La mercaderia viaja por cuenta y riesgo del comprador.</p>
-                <p>Es responsabilidad del cliente controlar su compra antes de salir del local.</p>
-                <p>Su compra tiene 48hs para cambio ante fallas previas del producto.</p>
-                <p>Instagram: @Blass.Multirrubro</p>
-                <p>Facebook: Blass Multirrubro</p>
-                <h3>Muchas Gracias por su Compra.!</h3>
-            </div>
+            
         </div>
     </body>
     </html>
