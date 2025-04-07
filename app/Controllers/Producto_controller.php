@@ -93,6 +93,8 @@ class Producto_controller extends Controller{
              return redirect()->to(base_url('nuevoProducto'));
         }
     }
+
+
     // verifica los datos de la categoria nueva
     public function categoriaValidation() {
         $session = session();
@@ -326,7 +328,7 @@ class Producto_controller extends Controller{
         } else {
         	$validation= $this->validate([
         		'image' => ['uploaded[imagen]',
-        		'mime_in[imagen,image/jpg,image/jpeg,image/png]',
+        		'mime_in[imagen,image/jpg,image/jpeg,image/png,image/webp]',
         	]
         	]);
         	if($validation){
@@ -442,8 +444,9 @@ class Producto_controller extends Controller{
 
         return redirect()->to(base_url('Lista_Productos'));
     }
+
     //elimina la categoria
-    public function deleteCateg($categoria_id){
+public function deleteCateg($categoria_id){
         $session = session();
         // Verifica si el usuario está logueado
         if (!$session->has('id')) { 

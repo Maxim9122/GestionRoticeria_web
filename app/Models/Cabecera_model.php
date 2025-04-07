@@ -5,7 +5,7 @@ class Cabecera_model extends Model
 {
 	protected $table = 'ventas_cabecera';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['id_cae','id_usuario','fecha', 'hora_registro', 'hora' ,'id_cliente', 'total_venta', 'tipo_pago' , 'total_bonificado', 'tipo_compra', 'fecha_pedido','hora_entrega' , 'estado'];
+    protected $allowedFields = ['aderezo','id_cae','id_usuario','fecha', 'hora_registro', 'hora' ,'id_cliente', 'total_venta', 'tipo_pago' , 'total_bonificado', 'tipo_compra', 'fecha_pedido','hora_entrega' , 'estado'];
 
     public function getVentasCabecera(){
       $db = db_connect();

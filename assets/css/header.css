@@ -118,10 +118,16 @@ a{
     }
 }
 
-.frmImg{
+.frmImg {
+    border-radius: 5px;
     height: 50px;
     width: 50px;
-  }
+    transition: transform 0.3s ease-in-out;
+}
+
+.frmImg:hover {
+    transform: scale(3.2);
+}
 
 .navImg {
     height: 50px;

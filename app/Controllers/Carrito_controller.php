@@ -13,6 +13,7 @@ Use App\Models\VentaDetalle_model;
 Use App\Models\Clientes_model;
 use App\Models\Usuarios_model;
 use App\Models\Cae_model;
+Use App\Models\categoria_model;
 
 
 class Carrito_controller extends Controller{
@@ -124,15 +125,26 @@ public function ListCompraDetalle($id)
     echo view('footer/footer');
 }
 
-    public function productosAgregados(){
-        $cart = \Config\Services::cart();
-		$carrito['carrito']=$cart->contents();
-        $data['titulo']='Productos en el Carrito'; 
-		echo view('navbar/navbar');
-        echo view('header/header',$data);        
-        echo view('carrito/ProductosEnCarrito',$carrito);
-        echo view('footer/footer');
+   
+public function productosAgregados() {
+    $Model = new categoria_model();
+    $cart = \Config\Services::cart();
+    $carrito['carrito'] = $cart->contents();
+    
+    // Obtener categorías para todos los productos en el carrito
+    $categorias = [];
+    foreach ($carrito['carrito'] as $item) {
+        $categorias[$item['id']] = $Model->getCategoriaPorProducto($item['id']);
     }
+    
+    $data['categorias'] = $categorias;
+    $data['titulo'] = 'Productos en el Carrito'; 
+    
+    echo view('navbar/navbar');
+    echo view('header/header', $data);        
+    echo view('carrito/ProductosEnCarrito', array_merge($carrito, $data));
+    echo view('footer/footer');
+}
 
     //Agrega elemento al carrito
 	function add()
@@ -259,39 +271,52 @@ public function ListCompraDetalle($id)
         if ($accion == 'actualizar') {
             
             $cart = \Config\Services::cart();
-            // Recibe los datos del carrito, calcula y actualiza
-               $cart_info = $this->request->getPost('cart');
+            $cart_info = $this->request->getPost('cart');
             
-            foreach( $cart_info as $id => $carrito)
-            {   
+            foreach ($cart_info as $id => $carrito) {
                 $prod = new Productos_model();
                 $idprod = $prod->getProducto($carrito['id']);
-                if($carrito['id'] < 100000){
-                $stock = $idprod['stock'];
-                }
-                 $rowid = $carrito['rowid'];
+                $stock = ($carrito['id'] < 100000) ? $idprod['stock'] : null;
+            
+                $rowid = $carrito['rowid'];
                 $price = $carrito['price'];
-                $amount = $price * $carrito['qty'];
                 $qty = $carrito['qty'];
-    
-                if($carrito['id'] < 100000){
-                if($qty <= $stock && $qty >= 1){ 
-                $cart->update(array(
-                    'rowid'   => $rowid,
-                    'price'   => $price,
-                    'amount' =>  $amount,
-                    'qty'     => $qty
-                    ));	    	
-                }else{
-                    session()->setFlashdata('msgEr','La Cantidad Solicitada de algunos productos no estan disponibles o SELECCIONASTE 0!');
+                $amount = $price * $qty;
+            
+                $update_data = [
+                    'rowid'  => $rowid,
+                    'price'  => $price,
+                    'qty'    => $qty,
+                    'amount' => $amount,
+                    'options' => [] // Se inicializa vacío para ir agregando
+                ];
+            
+                // Añadimos stock a las options si es un producto con stock
+                if ($carrito['id'] < 100000) {
+                    $update_data['options']['stock'] = $stock;
                 }
+            
+                // Si hay aderezos, los añadimos a las opciones
+                if (isset($carrito['options']['aderezos'])) {
+                    $update_data['options']['aderezos'] = $carrito['options']['aderezos'];
                 }
-                
+            
+                // Validamos stock si es un producto normal
+                if ($carrito['id'] < 100000) {
+                    if ($qty <= $stock && $qty >= 1) {
+                        $cart->update($update_data);
+                    } else {
+                        session()->setFlashdata('msgEr', 'La Cantidad Solicitada de algunos productos no está disponible o SELECCIONASTE 0!');
+                    }
+                } else {
+                    // Productos sin validación de stock (ID >= 100000)
+                    $cart->update($update_data);
+                }
             }
-    
-            session()->setFlashdata('msg','Carrito Actualizado!');
-            // Redirige a la misma página que se encuentra
-            return redirect()->to(base_url('CarritoList'));
+            
+            session()->setFlashdata('msg', 'Carrito Actualizado!');
+            return redirect()->to(base_url('CarritoList'));          
+
 
 
         } elseif ($accion == 'confirmar') {
@@ -385,13 +410,7 @@ public function ListCompraDetalle($id)
     $tipo_pago = $this->request->getPost('tipo_pago');
     //Total de la venta
     $total = $this->request->getPost('total_venta');
-    //Total menos el descuento si se pago en efectivo.
-    $total_conDescuento = $this->request->getPost('total_con_descuento');
-    //Si no trajo el descuento y esa variable quedo vacia se asigna el mismo valor de la venta total.
-    if (!$total_conDescuento) {
-        $total_conDescuento = $total;
-    }
-    
+       
     // Establecer zona horaria y obtener fecha/hora en formato correcto
     date_default_timezone_set('America/Argentina/Buenos_Aires');
     $hora = date('H:i:s'); // Formato TIME

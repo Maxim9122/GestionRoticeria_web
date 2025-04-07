@@ -34,4 +34,18 @@ class categoria_model extends Model
     	return $this->where('categoria_id',$categoria_id)->first();
     }
 
+    // En categoria_model.php
+public function getCategoriaPorProducto($producto_id) {
+    $builder = $this->db->table('productos');
+    $builder->select('categorias.descripcion as categoria');
+    $builder->join('categorias', 'categorias.categoria_id = productos.categoria_id');
+    $builder->where('productos.id', $producto_id);
+    $query = $builder->get();
+    
+    if ($query->getNumRows() > 0) {
+        return $query->getRow()->categoria; // Devuelve directamente el string
+    }
+    return null;
+}
+
 }

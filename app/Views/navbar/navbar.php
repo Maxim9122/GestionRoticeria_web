@@ -1,10 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Multirrubro Blass</title>
-  <link rel="icon" href="<?php echo base_url('./assets/img/iconMB2.png');?>">
+  <title>San Vicente Hamburgueseria</title>
+  <link rel="icon" href="<?php echo base_url('./assets/img/carrito2.png');?>">
   <link rel="stylesheet" href="<?php echo base_url('./assets/css/navbar.css');?>">
   <link rel="stylesheet" href="<?php echo base_url('./assets/css/clock.css');?>">
   <link rel="stylesheet" href="<?php echo base_url('./assets/css/mensajesTemporales.css');?>">
@@ -12,6 +13,49 @@
   <script src="<?php echo base_url('./assets/js/a25933befb.js');?>" crossorigin="anonymous"></script>
   
 </head>
+
+<style>
+  .cart-container {
+    position: relative;
+    display: inline-block;
+}
+
+.cart-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    padding: 10px;
+    min-width: 200px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 1000;
+}
+
+.cart-container:hover .cart-dropdown {
+    display: block;
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.cart-item:last-child {
+    border-bottom: none;
+}
+
+.resaltado {
+    color: orange;
+    border: 2px solid orange;
+    padding: 10px;
+    display: inline-block;
+    border-radius: 5px;
+    text-align: center;
+}
+</style>
 
 <body>
 
@@ -43,8 +87,27 @@
           <li class="nnavItem">
             <a href="<?= base_url('/catalogo')?>" class="btn">Productos</a>
           </li>
-          <li class="navItem">
-          <a href="<?php echo base_url('CarritoList') ?>"> <img class="navImg"  src=" <?php echo base_url('assets/img/icons/iconMB2.png')?>"> </a>
+          <li class="navItem cart-container">
+              <a href="<?= base_url('CarritoList') ?>">
+                  <img class="navImg" src="<?= base_url('assets/img/icons/carrito2.png') ?>">
+              </a>
+              <div class="cart-dropdown">
+                  <?php 
+                  $cart = \Config\Services::cart();
+                  $items = $cart->contents(); // Obtiene los items del carrito
+                  ?>
+                  
+                  <?php if (empty($items)): ?>
+                      <p>El carrito está vacío</p>
+                  <?php else: ?>
+                      <?php foreach ($items as $item): ?>
+                          <div class="cart-item">
+                              <span class="item-name"><?= esc($item['name']) ?></span>
+                              <span class="item-quantity"><?= esc($item['qty']) ?></span>
+                          </div>
+                      <?php endforeach; ?>
+                  <?php endif; ?>
+              </div>
           </li>
           <li class="nnavItem">
             <a href="<?= base_url('pedidos')?>" class="btn">PEDIDOS</a>

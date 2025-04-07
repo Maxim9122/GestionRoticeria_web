@@ -25,6 +25,7 @@
         z-index: 1000;
         box-shadow: 0px 0px 10px #ff073a; /* Efecto neón */
     }
+    
 </style>
 <script>
     setTimeout(function() {
@@ -226,8 +227,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
 <script>
     
-    $(document).ready( function () {
-      $('#users-list').DataTable( {
+    $(document).ready(function () {
+    // Inicializar DataTables
+    $('#users-list').DataTable({
+
+        "stateSave": true, // Habilitar el guardado del estado
+
         "language": {
             "lengthMenu": "Mostrar _MENU_ registros por página.",
             "zeroRecords": "Lo sentimos! No hay resultados.",
@@ -236,15 +241,62 @@ document.addEventListener("DOMContentLoaded", function() {
             "infoFiltered": "(filtrado de _MAX_ registros totales)",
             "search": "Buscar: ",
             "paginate": {
-              "next": "Siguiente",
-              "previous": "Anterior"
+                "next": "Siguiente",
+                "previous": "Anterior"
             }
+        },
+        initComplete: function () {
+            // Cambiar el texto del placeholder en el input de búsqueda
+            $('#users-list_filter input').attr('placeholder', 'Nombre, Categoría, etc...');
+
+            // Enfocar el campo de búsqueda de la tabla después de inicializar DataTables
+            $('#users-list_filter input').focus();
         }
-    } );
-  } );
+    });
+
+    // Deshabilitar autofocus en el campo de código de barras
+    document.getElementById('product_input').removeAttribute('autofocus');
+});
 
 </script>
+<style>
+  
+/* Mover el buscador a la derecha */
+.dataTables_filter {
+        display: flex;
+        justify-content: flex-end;
+        width: 100%;
+    }
 
+    /* Mover el selector de "registros por página" a la derecha */
+    .dataTables_length {
+        text-align: right;
+        width: 100%;
+    }
+
+    .dataTables_length select {
+        display: inline-block;
+        margin: 0 auto;
+    }
+
+    /* Hacer el campo de búsqueda más largo y ancho */
+    .dataTables_filter input {
+        width: 300px; /* Ajusta el tamaño según sea necesario */
+        height: 55px; /* Ajusta la altura si lo deseas */
+        font-size: 24px; /* Tamaño de la fuente */
+        padding: 5px 10px; /* Añadir espacio dentro del campo */
+        border-radius: 5px; /* Bordes redondeados */
+        border: 1px solid #ccc; /* Borde gris claro */
+    }
+
+    /* Cambiar el color y hacer más nítida la letra del placeholder */
+    .dataTables_filter input::placeholder {
+        color: white; /* Cambiar a blanco */
+        opacity: 1; /* Asegura que el color del placeholder no sea opaco */
+        font-weight: bold; /* Hacer el texto más nítido */
+    }
+
+</style>
 <script>
 const input = document.getElementById('product_input');
 const select = document.getElementById('product_select');

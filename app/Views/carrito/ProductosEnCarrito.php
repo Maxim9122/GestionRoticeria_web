@@ -113,45 +113,43 @@ if (!empty($session)) {
 $gran_total = isset($gran_total) ? $gran_total : 0; // Si $gran_total no está definido, usa 0 como valor
 ?>
 
-        <table class="texto-negrita">
 
-            <?php // Todos los items de carrito en "$cart".
-            if ($carrito):
+<table class="texto-negrita">
+    <?php if ($carrito): ?>
+        <tr class="colorTexto2">
+            <td>ID</td>
+            <td>Nombre</td>
+            <td class="ocultar-en-movil">Precio</td>
+            <td>Cantidad</td>
+            <td>Aderezos</td> <!-- Nueva columna para aderezos -->
+            <td>Subtotal</td>
+            <td>Eliminar?</td>
+        </tr>
+        
+        <?php echo form_open('carrito/procesarCarrito', ['id' => 'carrito_form']); ?>
+            <?php
+            $gastos = 0;
+            $i = 1;
+            
+            foreach ($carrito as $item):
+                echo form_hidden('cart[' . $item['id'] . '][id]', $item['id']);
+                echo form_hidden('cart[' . $item['id'] . '][rowid]', $item['rowid']);
+                echo form_hidden('cart[' . $item['id'] . '][name]', $item['name']);
+                echo form_hidden('cart[' . $item['id'] . '][price]', $item['price']);
+                echo form_hidden('cart[' . $item['id'] . '][qty]', $item['qty']);
             ?>
-                <tr class=" colorTexto2"  >
-                    <td>ID</td>
-                    <td>Nombre</td>
-                    <td class="ocultar-en-movil">Precio</td>
-                    <td>Cantidad</td>
-                    <td>Subtotal</td>
-                    <td>Eliminar?</td>
-                </tr>
-                
-            <?php // Crea un formulario php y manda los valores a carrito_controller/actualiza carrito
-            echo form_open('carrito/procesarCarrito', ['id' => 'carrito_form']); // Deja vacío para enviar al mismo controlador
-                $gastos = 0;
-                $i = 1;
-
-                foreach ($carrito as $item):
-                    echo form_hidden('cart[' . $item['id'] . '][id]', $item['id']);
-                    echo form_hidden('cart[' . $item['id'] . '][rowid]', $item['rowid']);
-                    echo form_hidden('cart[' . $item['id'] . '][name]', $item['name']);
-                    echo form_hidden('cart[' . $item['id'] . '][price]', $item['price']);
-                    echo form_hidden('cart[' . $item['id'] . '][qty]', $item['qty']);
-            ?>
-                    <tr style="color: black;" >
-                        
-                        <td  class="separador" style="color: #ffff;">
-                            <?php echo $i++; ?>
-                        </td>
-                        <td class="separador" style="color: #ffff;">
-                            <?php echo $item['name']; ?>
-                        </td>
-                        <td class="separador ocultar-en-movil"  style="color: #ffff;">
-                        $ARS <?php  echo number_format($item['price'], 2);?>
-                        </td>
-                        
-                        <td class="separador" style="color: #ffff;">
+                <tr style="color: black;">
+                    <td class="separador" style="color: #ffff;">
+                        <?php echo $i++; ?>
+                    </td>
+                    <td class="separador" style="color: #ffff;">
+                        <?php echo $item['name']; ?>
+                    </td>
+                    <td class="separador ocultar-en-movil" style="color: #ffff;">
+                        $ARS <?php echo number_format($item['price'], 2); ?>
+                    </td>
+                    
+                    <td class="separador" style="color: #ffff;">
                         <?php 
                             if ($item['id'] < 10000) {
                                 echo form_input([
@@ -163,80 +161,81 @@ $gran_total = isset($gran_total) ? $gran_total : 0; // Si $gran_total no está d
                                     'size' => '1',
                                     'style' => 'text-align: right; width: 50px;',
                                     'oninput' => "this.value = this.value.replace(/[^0-9]/g, '')"
-                                ]);?>
-                                <span class="stock-disponible"> (Disponibles: <?php echo  $item['options']['stock']; ?>) </span>
+                                ]); ?>
+                                <span class="stock-disponible"> 
+                                    (Disponibles: 
+                                    <?php echo isset($item['options']['stock']) ? $item['options']['stock'] : 'N/D'; ?>)
+                                </span>
+
                             <?php } else {
                                 echo number_format($item['qty']);
                             }
-                            ?>
-                        </td>
-                        
-                            <?php $gran_total = $gran_total + $item['subtotal']; ?>
-                        <td class="separador" style="color: #ffff;">
-                        $ARS <?php echo number_format($item['subtotal'], 2) ?>
-                        </td>
-                        <td class="imagenCarrito separador" style="color: #ffff;">
-                            <?php // Imagen para Eliminar Item
-                                $path = '<img src= '. base_url('assets/img/icons/basura3.png') . ' width="10px" height="10px">';
-                                echo anchor('carrito_elimina/'. $item['rowid'], $path);
-                            ?>
-                            
-                        </td>
-                        
-                    </tr>
-                    
-                <?php
-                endforeach;
-                ?>
-                
-                <tr>
-                    <td>
-                        
-                        
+                        ?>
                     </td>
                     
-                    <td colspan="5" align="right">
-                        <br>
-                        <h4 class="totalVenta">Total: $
-                            
-                            <?php //Gran Total
-                            echo number_format($gran_total, 2);
-                            ?>
-                            
-                        </h4>
+                    <!-- Campo de aderezos solo para hamburguesas -->
+                    <td class="separador" style="color: #ffff;">
+                
+                    <?php 
+                        if (!empty($categorias[$item['id']]) && 
+                            (strtolower(trim($categorias[$item['id']])) == 'hamburguesas' || strtolower(trim($categorias[$item['id']])) == 'sand_mila')): 
+                    ?>
+                        <input type="text" 
+                            name="cart[<?= $item['id'] ?>][options][aderezos]" 
+                            id="aderezos_<?= $item['id'] ?>" 
+                            value="<?= isset($item['options']['aderezos']) ? $item['options']['aderezos'] : '' ?>"
+                            placeholder="Ej: Mayonesa, mostaza"
+                            style="width: 150px; padding: 5px;">
+                    <?php else: ?>
+                        -
+                    <?php endif; ?>
 
-                        <h4></h4>
-                        <br>
-                        <input type="hidden" id="accion" name="accion" value=""> <!-- Este campo controlará a qué función se envía -->
-
-                        <!-- Cancelar edicion de pedido -->
-                        <?php if ($id_pedido) { ?>
-                            <a href="<?php echo base_url('cancelar_edicion/'.$id_pedido);?>" class="danger" onclick="return confirmarAccionPedido();">
-                                Cancelar Modificación
-                            </a>
-                            <?php } else {?>
-                            <!-- Borrar carrito usa mensaje de confirmacion -->
-                            <a href="<?php echo base_url('carrito_elimina/all');?>" class="danger" onclick="return confirmarAccionCompra();">
-                                        Borrar Todo
-                            </a>
-                            <?php  } ?>
-
-                        <!-- Submit boton. Actualiza los datos en el carrito -->
-                        <button type="submit" class="success" onclick="setAccion('actualizar')">
-                            Actualizar Importes
-                        </button>
-                        
-
-                            <br><br>
-                        <!-- " Confirmar orden envia a carrito_controller/muestra_compra  -->
-                        <a href="javascript:void(0);" class="success" onclick="setAccion('confirmar')">Confirmar Compra</a>
-
-                        
+                    </td>
+                    
+                    <?php $gran_total = $gran_total + $item['subtotal']; ?>
+                    <td class="separador" style="color: #ffff;">
+                        $ARS <?php echo number_format($item['subtotal'], 2) ?>
+                    </td>
+                    <td class="imagenCarrito separador" style="color: #ffff;">
+                        <?php
+                            $path = '<img src="'.base_url('assets/img/icons/basura3.png').'" width="10px" height="10px">';
+                            echo anchor('carrito_elimina/'.$item['rowid'], $path);
+                        ?>
                     </td>
                 </tr>
-                <?php echo form_close();
-            endif; ?>
-        </table>
+            <?php endforeach; ?>
+            
+            <tr>
+                <td colspan="4"></td>
+                <td colspan="3" align="right">
+                    <br>
+                    <h4 class="totalVenta">Total: $<?php echo number_format($gran_total, 2); ?></h4>
+                    <br>
+                    <input type="hidden" id="accion" name="accion" value="">
+                    
+                    <?php if ($id_pedido) { ?>
+                        <a href="<?php echo base_url('cancelar_edicion/'.$id_pedido); ?>" class="danger" onclick="return confirmarAccionPedido();">
+                            Cancelar Modificación
+                        </a>
+                    <?php } else { ?>
+                        <a href="<?php echo base_url('carrito_elimina/all'); ?>" class="danger" onclick="return confirmarAccionCompra();">
+                            Borrar Todo
+                        </a>
+                    <?php } ?>
+                    
+                    <button type="submit" class="success" onclick="setAccion('actualizar')">
+                        Actualizar Importes
+                    </button>
+                    
+                    <br><br>
+                    <a href="javascript:void(0);" class="success" onclick="setAccion('confirmar')">Continuar Compra</a>
+                </td>
+            </tr>
+        <?php echo form_close(); ?>
+    <?php endif; ?>
+</table>
+
+
     </div>
 </div>
 
