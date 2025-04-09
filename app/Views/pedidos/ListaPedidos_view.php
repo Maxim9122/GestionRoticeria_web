@@ -101,12 +101,20 @@
                     ✏️ Modificar
                 </a>
                 <?php } ?>
-            </li> 
+            </li>
+            <?php if($p['modo_compra'] == 'Compra'){ ?> 
             <li>
                 <a class="text-success btn" onclick="mostrarConfirmacion(event, <?php echo $p['id']; ?>)">
-                    ✅ Listo
+                    ✅ Cobrar
                 </a>
             </li>
+            <?php } else if($p['modo_compra'] == 'Fiado') { ?>
+            <li>
+                <a class="text-success btn" onclick="mostrarConfirmacion(event, <?php echo $p['id']; ?>)">
+                    ✅ Entrega
+                </a>
+            </li>
+            <?php } ?>
                 </ul>
             </div>
         </td>
@@ -194,21 +202,6 @@ function cerrarConfirmacion() {
 
 
 
-
-<!-- Cuadro de confirmación Pedido Listo-->
-<div id="confirm-dialog" class="confirm-dialog" style="display: none;">
-    <div class="confirm-content btn2">
-        <p id="confirm-message">¿Cómo desea continuar?</p>
-        <div class="confirm-buttons">
-            <button id="confirm-factura" class="btn btn-yes" autofocus>Facturar C</button>
-            <button id="confirm-ticket" class="btn btn-no">Solo Ticket</button>
-            <button id="confirm-cancelar" class="btn btn-cancel">Cancelar</button>
-        </div>
-    </div>
-</div>
-
-
-
      
   </div>
 </div>
@@ -266,113 +259,10 @@ document.getElementById('hora').value = formattedTime;
 
 </script>
 
-<!-- Esta parte es del cartel de confirmacion de Cancelar pedido o pedido Listo-->
-<script>
-
-function mostrarConfirmacion(event, id) {
-    event.preventDefault(); // Previene la acción por defecto del enlace
-    const confirmDialog = document.getElementById('confirm-dialog');
-    const confirmFactura = document.getElementById('confirm-factura');
-    const confirmTicket = document.getElementById('confirm-ticket');
-    const confirmCancelar = document.getElementById('confirm-cancelar');
-
-    // Muestra el cuadro de confirmación
-    confirmDialog.style.display = 'flex';
-    // Base URL desde PHP
-    let urlBase = "<?php echo base_url(); ?>";
-
-    // Facturar C -> Redirige a verificarTA con el ID
-    confirmFactura.onclick = function () {
-        window.location.href = `${"<?php echo base_url('verificarTA'); ?>"}/${id}`;
-    };
-
-    // Solo Ticket -> Redirige a generarTicket con el ID
-    confirmTicket.onclick = function () {
-        window.location.href = `${"<?php echo base_url('generarTicket'); ?>"}/${id}`;
-    };
-
-
-    // Cancelar -> Cierra el cuadro de confirmación
-    confirmCancelar.onclick = cerrarConfirmacion;
-
-    // Detectar la tecla Escape para cerrar el cuadro
-    document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape") {
-            cerrarConfirmacion();
-        }
-    }, { once: true }); // Elimina el evento después de ejecutarse una vez
-}
-
-// Función para cerrar el cuadro de confirmación
-function cerrarConfirmacion() {
-    document.getElementById('confirm-dialog').style.display = 'none';
-}    
-    
-</script>
 
 
 
 
 
-<!-- Cartel de la funcion que actualiza los campos de Barber Hora y Servicio 
- si se modificaron antes de guardar el pedido Completado-->
-<script>
-
-function confirmarYEnviar(url) {
-    // Detener la acción predeterminada del enlace (si es necesario, en un evento de tipo 'click')
-    event.preventDefault();
-
-    // Mostrar el cuadro de diálogo
-    const dialog = document.getElementById('confirm-dialog');
-    const messageElement = document.getElementById('confirm-message');
-    const yesButton = document.getElementById('confirm-yes');
-    const noButton = document.getElementById('confirm-no');
-
-    messageElement.textContent = 'Marcar Pedido como completado?';
-    dialog.style.display = 'flex';
-
-    // Acción para confirmar
-    yesButton.onclick = function () {
-        enviarFormulario(url);
-    };
-
-    // Acción para cancelar
-    noButton.onclick = cerrarConfirmacion;
-
-    // Detectar clics fuera del cuadro de diálogo
-    window.onclick = function (e) {
-        if (e.target === dialog) {
-            cerrarConfirmacion();
-        }
-    };
-
-    // Detectar las teclas Enter y Escape
-    window.onkeydown = function (e) {
-        if (e.key === "Escape") {
-            cerrarConfirmacion();
-        } else if (e.key === "Enter") {
-            enviarFormulario(url);
-        }
-    };
-}
-
-function enviarFormulario(url) {
-    // Enviar el formulario al hacer clic en "Sí"
-    const formulario = document.getElementById('pedidoForm');
-    formulario.action = url; // Cambiar la acción del formulario
-    formulario.submit(); // Enviar el formulario
-    cerrarConfirmacion(); // Cerrar el cuadro de confirmación
-}
-
-function cerrarConfirmacion() {
-    const dialog = document.getElementById('confirm-dialog');
-    dialog.style.display = 'none';
-
-    // Eliminar los eventos para evitar interferencias en el futuro
-    window.onclick = null;
-    window.onkeydown = null;
-}
-
-</script>
 
 <br><br>
