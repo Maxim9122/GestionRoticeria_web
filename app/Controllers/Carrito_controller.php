@@ -326,33 +326,46 @@ public function productosAgregados() {
                $cart_info = $this->request->getPost('cart');
                $errores_stock = false; // Variable para controlar si hay errores de stock
 
-            foreach( $cart_info as $id => $carrito)
-            {   
+               foreach ($cart_info as $id => $carrito) {
                 $prod = new Productos_model();
                 $idprod = $prod->getProducto($carrito['id']);
-                if($carrito['id'] < 100000){
-                $stock = $idprod['stock'];
-                }
-                 $rowid = $carrito['rowid'];
+                $stock = ($carrito['id'] < 100000) ? $idprod['stock'] : null;
+            
+                $rowid = $carrito['rowid'];
                 $price = $carrito['price'];
-                $amount = $price * $carrito['qty'];
                 $qty = $carrito['qty'];
-    
-                if($carrito['id'] < 100000){
-                if($qty <= $stock && $qty >= 1){ 
-                $cart->update(array(
-                    'rowid'   => $rowid,
-                    'price'   => $price,
-                    'amount' =>  $amount,
-                    'qty'     => $qty
-                    ));	    	
-                }else{
-                    // Si hay un error de stock, marca la variable de error y guarda el mensaje
-                    $errores_stock = true;
-                    session()->setFlashdata('msgEr','La Cantidad Solicitada de algunos productos no estan disponibles o SELECCIONASTE 0!');
+                $amount = $price * $qty;
+            
+                $update_data = [
+                    'rowid'  => $rowid,
+                    'price'  => $price,
+                    'qty'    => $qty,
+                    'amount' => $amount,
+                    'options' => [] // Se inicializa vacío para ir agregando
+                ];
+            
+                // Añadimos stock a las options si es un producto con stock
+                if ($carrito['id'] < 100000) {
+                    $update_data['options']['stock'] = $stock;
                 }
+            
+                // Si hay aderezos, los añadimos a las opciones
+                if (isset($carrito['options']['aderezos'])) {
+                    $update_data['options']['aderezos'] = $carrito['options']['aderezos'];
                 }
-                
+            
+                // Validamos stock si es un producto normal
+                if ($carrito['id'] < 100000) {
+                    if ($qty <= $stock && $qty >= 1) {
+                        $cart->update($update_data);
+                    } else {
+                        $errores_stock = true;
+                        session()->setFlashdata('msgEr', 'La Cantidad Solicitada de algunos productos no está disponible o SELECCIONASTE 0!');
+                    }
+                } else {
+                    // Productos sin validación de stock (ID >= 100000)
+                    $cart->update($update_data);
+                }
             }
             
             // Si hubo errores de stock, redirige a la página de carrito
@@ -388,57 +401,54 @@ public function productosAgregados() {
 
 
 //GUARDA LA COMPRA
-    public function guarda_compra($id_pedido = null)
+public function guarda_compra($id_pedido = null)
 {    
     $cart = \Config\Services::cart();
     $session = session();
     
-    if(!$cart){
-    return redirect()->to(base_url('catalogo'));
+    if (!$cart || empty($cart->contents())) {
+        return redirect()->to(base_url('catalogo'));
     }
-    //id del vendedor
-    $id_usuario = $session->get('id');    
 
+    $id_usuario = $session->get('id');    
     $monto_transfer = $this->request->getVar('pagoTransferencia');
     $monto_efec = $this->request->getVar('pagoEfectivo');
-    
     $costo_envio = $this->request->getVar('costoEnvio');
-
     $nombre_cliente = $this->request->getVar('nombre_prov');
-    //Total de la venta
     $total = $this->request->getPost('total_venta');
-    
-    // Establecer zona horaria y obtener fecha/hora en formato correcto
+
     date_default_timezone_set('America/Argentina/Buenos_Aires');
-    $hora = date('H:i:s'); // Formato TIME
-    $fecha = date('d-m-Y'); // Formato DATE
-    //Rescato el tipo de compra (Pedido o Compra_Normal)
+    $hora = date('H:i:s');
+    $fecha = date('d-m-Y');
+
     $tipo_compra = 'Pedido';
-    //Modo de compra (fiado o compra)
     $modo_compra = $this->request->getVar('modo_compra');
-    //$tipo_compra = $this->request->getPost('tipo_compra_input');
-    //print_r($tipo_compra);exit;
-    //Si no se selecciono una fecha se asigna la fecha de hoy por defecto para el pedido.
     $fecha_pedido = $this->request->getPost('fecha_pedido_input');
     if (!$fecha_pedido){
         $fecha_pedido = date('d-m-Y');
     }
- 
-    //Formateamos la fecha del pedido al formato dia-mes-año
     $fecha_pedido_formateada = date('d-m-Y', strtotime($fecha_pedido));   
- 
 
-    // Guardar la nueva cabecera del Pedido (Nuevo o Modidicado segun sea) utiliza el mismo carrito.   
-        
-        $cabecera_model = new Cabecera_model();
-        $ventas_id = $cabecera_model->save([
+    $cabecera_model = new Cabecera_model();
+    $VentaDetalle_model = new VentaDetalle_model();
+    $Producto_model = new Productos_model();
+
+    // Verificar si se está modificando un pedido existente
+    if ($session->get('estado') == 'Modificando') {
+        $id_pedido_mod = $session->get('id_pedido');
+
+        // Eliminar los detalles anteriores
+        $VentaDetalle_model->where('venta_id', $id_pedido_mod)->delete();
+
+        // Restaurar los datos de la cabecera
+        $cabecera_model->update($id_pedido_mod, [
             'fecha'        => $fecha,
             'hora'         => $hora,
             'fecha_pedido' => $fecha,
             'id_cliente'   => 1,
             'nombre_prov_client' => $nombre_cliente,
             'id_usuario'   => $id_usuario,
-            'total_venta'  => $total,           
+            'total_venta'  => $total,
             'modo_compra'  => $modo_compra,            
             'tipo_compra'  => $tipo_compra,
             'monto_efectivo' => $monto_efec,
@@ -446,38 +456,52 @@ public function productosAgregados() {
             'costo_envio' => $costo_envio,
             'estado' => 'Pendiente'
         ]);
-    
 
-    // Obtener ID de la nueva cabecera guardada
-    $id_cabecera = $cabecera_model->getInsertID();
+        $id_cabecera = $id_pedido_mod;
+    } else {
+        // Guardar como nuevo pedido
+        $cabecera_model->save([
+            'fecha'        => $fecha,
+            'hora'         => $hora,
+            'fecha_pedido' => $fecha,
+            'id_cliente'   => 1,
+            'nombre_prov_client' => $nombre_cliente,
+            'id_usuario'   => $id_usuario,
+            'total_venta'  => $total,
+            'modo_compra'  => $modo_compra,            
+            'tipo_compra'  => $tipo_compra,
+            'monto_efectivo' => $monto_efec,
+            'monto_transfer' => $monto_transfer,
+            'costo_envio' => $costo_envio,
+            'estado' => 'Pendiente'
+        ]);
+        $id_cabecera = $cabecera_model->getInsertID();
+    }
 
-    // Guardar detalles de la venta si el carrito no está vacío
-    if ($cart):
-        foreach ($cart->contents() as $item):
-            $VentaDetalle_model = new VentaDetalle_model();
-            $VentaDetalle_model->save([
-                'venta_id'    => $id_cabecera,
-                'producto_id' => $item['id'],
-                'cantidad'    => $item['qty'],
-                'aclaraciones'  => $item['options']['aderezos'] ?? null,
-                'precio'      => $item['price'],
-                'total'       => $item['subtotal'],
-            ]);
+    // Guardar los detalles
+    foreach ($cart->contents() as $item) {
+        $VentaDetalle_model->save([
+            'venta_id'    => $id_cabecera,
+            'producto_id' => $item['id'],
+            'cantidad'    => $item['qty'],
+            'aclaraciones'=> $item['options']['aderezos'] ?? null,
+            'precio'      => $item['price'],
+            'total'       => $item['subtotal'],
+        ]);
 
-            // Actualizar stock del producto
-            $Producto_model = new Productos_model();
-            $producto = $Producto_model->find($item['id']); // Asegúrate de usar el método correcto para obtener datos
+        // Descontar stock
+        $producto = $Producto_model->find($item['id']);
+        if ($producto && isset($producto['stock'])) {
+            $stock_edit = $producto['stock'] - $item['qty'];
+            $Producto_model->update($item['id'], ['stock' => $stock_edit]);
+        }
+    }
 
-            if ($producto && isset($producto['stock'])) {
-                $stock_edit = $producto['stock'] - $item['qty'];
-                $Producto_model->update($item['id'], ['stock' => $stock_edit]);
-            }
-        endforeach;
-    endif;
-
+    // Limpiar
     $cart->destroy();
-    session()->setFlashdata('msg', 'Compra Guardada con Éxito!');
-    // Redirige a la vista de la factura
+    $session->remove(['id_pedido', 'id_cliente_pedido', 'nombre_cliente', 'fecha_pedido', 'tipo_compra', 'modo_compra', 'estado']);
+
+    session()->setFlashdata('msg', 'Pedido guardado con éxito.');
     return redirect()->to('Carrito_controller/generarTicket/' . $id_cabecera);
 }
 

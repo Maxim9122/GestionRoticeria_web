@@ -257,19 +257,23 @@ class Pedidos_controller extends Controller{
     $cabecera = $cabecera_model->find($id_pedido);
     if($cabecera['estado'] == 'Pendiente'){
     $id_cliente = $cabecera ? $cabecera['id_cliente'] : null;
+    $nombre_cliente = $cabecera ? $cabecera['nombre_prov_client'] : null;
     $id_pedido = $cabecera ? $cabecera['id'] : null;
     $fecha_pedido = $cabecera ? $cabecera['fecha_pedido'] : null;
     $tipo_compra = $cabecera ? $cabecera['tipo_compra'] : null;
-    $tipo_pago = $cabecera ? $cabecera['tipo_pago'] : null;
-    //print_r($fecha_pedido);
+    $modo_compra = $cabecera ? $cabecera['modo_compra'] : null;
+    
+    //print_r($nombre_cliente);
     //exit;
     // Guardar los datos en la sesión para no perderlos si el carrito queda vacío
     $session->set([
         'id_pedido' => $id_pedido,
-        'id_cliente_pedido' => $id_cliente,        
+        'id_cliente_pedido' => $id_cliente,
+        'nombre_cliente' => $nombre_cliente,        
         'fecha_pedido' => $fecha_pedido,
         'tipo_compra' => $tipo_compra,
-        'tipo_pago' => $tipo_pago
+        'modo_compra' => $modo_compra,
+        'estado' => 'Modificando'
     ]);
     // Obtener los productos del pedido
     $detalles = $detalle_model->where('venta_id', $id_pedido)->findAll();
@@ -304,7 +308,8 @@ class Pedidos_controller extends Controller{
                 'price' => $detalle['precio'],
                 'name'  => $producto['nombre'],
                 'options' => array(
-                    'stock' => $producto['stock'],                   
+                    'stock' => $producto['stock'],
+                    'aderezos' => $detalle['aclaraciones'],                    
                 )
             ]);
         }
@@ -340,7 +345,7 @@ public function cancelar_edicion($id_pedido){
         }        
         // Después de guardar el pedido (cuando ya no se necesiten los datos de la sesión)
         $session = session();
-        $session->remove(['id_cliente_pedido', 'id_pedido', 'fecha_pedido', 'tipo_compra', 'tipo_pago']);
+        $session->remove(['modo_compra','nombre_cliente','estado','id_cliente_pedido', 'id_pedido', 'fecha_pedido', 'tipo_compra']);
         // Actualizar el estado del pedido a "Pendiente"
         $Cabecera_model->update($id_pedido, ['estado' => 'Pendiente']);
         $cart->destroy();

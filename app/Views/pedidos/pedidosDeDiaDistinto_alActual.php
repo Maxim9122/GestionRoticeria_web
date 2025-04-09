@@ -69,7 +69,7 @@
         <td><?php echo $p['nombre_cliente']; ?></td>
         <td><?php echo $p['telefono']; ?></td>
         <td><?php echo $p['nombre_usuario'];?></td>
-        <td>$<?php echo $p['total_bonificado'];?></td>
+        <td>$<?php echo $p['total_venta'];?></td>
         <td><?php echo $p['fecha'];?></td>
         <td><?php echo $p['hora'];?></td>
         <td><?php echo $p['fecha_pedido'];?></td>

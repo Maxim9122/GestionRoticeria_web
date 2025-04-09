@@ -3,6 +3,9 @@ namespace App\Controllers;
 use CodeIgniter\Controller;
 use App\Models\Usuarios_model;
 use App\Models\Sesion_model;
+Use App\Models\Productos_model;
+Use App\Models\Cabecera_model;
+Use App\Models\VentaDetalle_model;
   
 class Login_controller extends Controller
 {

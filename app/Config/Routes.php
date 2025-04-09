@@ -44,6 +44,7 @@ $routes->post('pedido_actualizar/(:num)', 'Pedidos_controller::pedido_actualizar
 $routes->post('clienteListo/(:num)', 'Pedidos_controller::Pedido_completado/$1');
 $routes->get('cancelar/(:num)', 'Pedidos_controller::Pedido_cancelado/$1');
 $routes->post('pedidoClienteRegistrado', 'Pedidos_controller::pedidoClienteRegistrado');
+$routes->get('cancelar_edicion/(:num)', 'Pedidos_controller::cancelar_edicion/$1');
 
 //Servicios
 $routes->get('/Lista_servicios', 'Servicios_controller::Servicios');

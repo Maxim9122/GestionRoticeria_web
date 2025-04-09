@@ -14,7 +14,16 @@ $cart = \Config\Services::cart();
 $session = session();
 $nombre = $session->get('nombre');
 $perfil = $session->get('perfil_id');
+$estado = '';
+if ($session->has('estado')) {
+    $estado = $session->get('estado');
+}
 
+$nombre_cliente = '';
+if ($session->has('nombre_cliente')) {
+    $nombre_cliente = $session->get('nombre_cliente');
+}
+//print_r($nombre_cliente);exit;
 // Inicializar variables
 $id_pedido = '';
 if ($session->has('id_pedido')) {
@@ -48,10 +57,10 @@ endif;
                 <tr>
                     <td style="color:rgb(192, 250, 214);"><strong>Nombre del Cliente:</strong></td>
                     <td>
-                        <input class="selector" type="text" name="nombre_prov" placeholder="Ingrese nombre cliente" maxlength="20" required>
+                        <input class="selector" type="text" name="nombre_prov" placeholder="Ingrese nombre cliente" maxlength="20" required value="<?= $nombre_cliente ?? '' ?>">
                     </td>
-                </tr>                         
-                
+                </tr>                       
+                <?php if($estado == 'Cobrando'){ ?>
                 <tr>
                     <td style="color: rgb(192, 250, 214);"><strong>Monto en Transferencia:</strong></td>
                     <td>
@@ -65,6 +74,7 @@ endif;
                         <input class="selector" type="text" id="pagoEfectivo" name="pagoEfectivo" placeholder="Monto en $" maxlength="15" readonly>
                     </td>
                 </tr>
+                <?php } ?>
                 <tr>
                     <td style="color: rgb(192, 250, 214);"><strong>Modo de Compra:</strong></td>
                     <td>
