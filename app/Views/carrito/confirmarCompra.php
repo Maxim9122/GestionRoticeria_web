@@ -23,11 +23,17 @@ $nombre_cliente = '';
 if ($session->has('nombre_cliente')) {
     $nombre_cliente = $session->get('nombre_cliente');
 }
-//print_r($nombre_cliente);exit;
-// Inicializar variables
+if ($session->has('nombre_cli')) {
+    $nombre_cliente = $session->get('nombre_cli');
+}
+
 $id_pedido = '';
 if ($session->has('id_pedido')) {
     $id_pedido = $session->get('id_pedido');
+}
+
+if ($session->has('total_venta')) {
+    $total_venta = $session->get('total_venta');
 }
 
 $gran_total = 0;
@@ -48,7 +54,11 @@ endif;
             <table style="font-weight: 900;" class="tableResponsive">
                 <tr>
                     <td style="color:rgb(192, 250, 214);"><strong>Total General:</strong></td>
-                    <td style="color: #ffff;"><strong id="totalCompra">$<?php echo number_format($gran_total, 2); ?></strong></td>
+                    <td style="color: #ffff;">
+                        <strong id="totalCompra">
+                    $<?php echo number_format(($gran_total > 0 ? $gran_total : $total_venta), 2, ',', '.'); ?>
+                        </strong>
+                    </td>
                 </tr>
                 <tr>
                     <td style="color:rgb(192, 250, 214);"><strong>Vendedor:</strong></td>
@@ -57,9 +67,12 @@ endif;
                 <tr>
                     <td style="color:rgb(192, 250, 214);"><strong>Nombre del Cliente:</strong></td>
                     <td>
-                        <input class="selector" type="text" name="nombre_prov" placeholder="Ingrese nombre cliente" maxlength="20" required value="<?= $nombre_cliente ?? '' ?>">
+                        <input class="selector" type="text" name="nombre_prov" id="nombreCliente" 
+                            placeholder="Ingrese nombre cliente" maxlength="20" required 
+                            value="<?= $nombre_cliente ?? '' ?>" list="clientesList" autocomplete="off">
+                        <datalist id="clientesList"></datalist>
                     </td>
-                </tr>                       
+                </tr>                     
                 <?php if($estado == 'Cobrando'){ ?>
                 <tr>
                     <td style="color: rgb(192, 250, 214);"><strong>Monto en Transferencia:</strong></td>
@@ -102,20 +115,29 @@ endif;
                 <?php echo form_hidden('total_venta', $gran_total); ?>
             </table>
             
-            <section class="botones-container" style="width:65%;">
-                <a class="btn" href="<?php echo base_url('CarritoList') ?>">Volver</a>
+            <section class="botones-container" style="width:65%;">                
             
-                <?php if ($id_pedido) { ?>
+                <?php if ($estado == 'Modificando') { ?>
+                    <a class="btn" href="<?php echo base_url('CarritoList') ?>">Volver</a>
                     <a href="<?php echo base_url('cancelar_edicion/'.$id_pedido);?>" class="btn danger" onclick="return confirmarAccionPedido();">
                         Cancelar Modificación
                     </a>
+                <?php } else if ($estado == 'Cobrando') { ?>
+                    <a href="<?php echo base_url('cancelarCobro/'.$id_pedido);?>" class="btn danger" onclick="return confirmarAccionCobro();">
+                        Cancelar Cobro
+                    </a>
                 <?php } else { ?>
+                    <a class="btn" href="<?php echo base_url('CarritoList') ?>">Volver</a>
                     <a href="<?php echo base_url('carrito_elimina/all');?>" class="btn danger" onclick="return confirmarAccionCompra();">
                         Cancelar Pedido
                     </a>
-                <?php } ?>
+                <?php }  ?>
                 <?php echo form_hidden('id_pedido', $id_pedido); ?>
-                <?php echo form_submit('confirmar', 'Confirmar', "class='btn'"); ?>
+                <?php if ($estado == 'Cobrando'): ?>
+                    <button type="submit" id="btnCobrar" class="btn">Cobrar</button>
+                <?php else: ?>
+                    <?php echo form_submit('confirmar', 'Confirmar', "class='btn'"); ?>
+                <?php endif; ?>
             </section>
         </div>
     </div>
@@ -124,102 +146,150 @@ endif;
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    function confirmarAccionCompra() {
-        Swal.fire({
-            title: "¿Estás seguro?",
-            text: "Esto eliminará todos los productos del carrito.",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Sí, Eliminar Todo",
-            cancelButtonText: "Cancelar"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = "<?php echo base_url('carrito_elimina/all'); ?>";
-            }
-        });
-        return false;
+// Función para el botón Cobrar
+document.getElementById('btnCobrar').addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    Swal.fire({
+        title: 'Deseas confirmar el cobro?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, Cobrado',
+        cancelButtonText: 'No, Volver'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Envía el formulario directamente
+            document.querySelector("form.form-signin").submit();
+        }
+    });
+});
+
+// Funciones de confirmación para otras acciones
+function confirmarAccionCompra() {
+    Swal.fire({
+        title: "¿Estás seguro?",
+        text: "Esto eliminará todos los productos del carrito.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, Eliminar Todo",
+        cancelButtonText: "Cancelar"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = "<?php echo base_url('carrito_elimina/all'); ?>";
+        }
+    });
+    return false;
+}
+
+function confirmarAccionCobro() {
+    Swal.fire({
+        title: "¿Estás seguro?",
+        text: "Se cancelará el Cobro del Pedido.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, Cancelar",
+        cancelButtonText: "No, Volver"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = "<?php echo base_url('cancelarCobro/'.$id_pedido); ?>";
+        }
+    });
+    return false;
+}
+
+function confirmarAccionPedido() {
+    Swal.fire({
+        title: "¿Estás seguro?",
+        text: "Se cancelará la modificación del pedido y quedará como estaba.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, Cancelar",
+        cancelButtonText: "No, Volver"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = "<?php echo base_url('cancelar_edicion/'.$id_pedido); ?>";
+        }
+    });
+    return false;
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    // Mostrar u ocultar el campo de costo de envío
+    const conEnvioSelect = document.getElementById("conEnvio");
+    const costoEnvioFila = document.getElementById("costoEnvioFila");
+
+    conEnvioSelect.addEventListener("change", function () {
+        costoEnvioFila.style.display = conEnvioSelect.value === "Si" ? "table-row" : "none";
+        if (conEnvioSelect.value !== "Si") {
+            document.getElementById("costoEnvio").value = "";
+        }
+    });
+    
+    // Calcular monto en efectivo
+    const pagoTransferencia = document.getElementById("pagoTransferencia");
+    const pagoEfectivo = document.getElementById("pagoEfectivo");
+    const granTotal = <?php echo ($gran_total > 0 ? $gran_total : $total_venta); ?>;
+
+    if (pagoEfectivo) {
+        pagoEfectivo.value = granTotal.toFixed(2); // Mostrar total inicial
     }
     
-    function confirmarAccionPedido() {
-        Swal.fire({
-            title: "¿Estás seguro?",
-            text: "Se cancelará la modificación del pedido y quedará como estaba.",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Sí, Cancelar",
-            cancelButtonText: "Cancelar"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = "<?php echo base_url('cancelar_edicion/'.$id_pedido); ?>";
-            }
-        });
-        return false;
+    function calcularMontoEfectivo() {
+        const transferencia = parseFloat(pagoTransferencia.value) || 0;
+
+        if (transferencia > granTotal) {
+            Swal.fire({
+                title: "Monto inválido",
+                text: "El monto en transferencia no puede superar el total de la compra.",
+                icon: "error",
+                confirmButtonText: "Aceptar"
+            }).then(() => {
+                pagoTransferencia.value = "";
+                pagoEfectivo.value = granTotal.toFixed(2);
+            });
+        } else {
+            const efectivo = granTotal - transferencia;
+            pagoEfectivo.value = efectivo.toFixed(2);
+        }
+    }
+    
+    if (pagoTransferencia) {
+        pagoTransferencia.addEventListener("input", calcularMontoEfectivo);
     }
 
-    document.addEventListener("DOMContentLoaded", function () {
-        // Mostrar u ocultar el campo de costo de envío
-        const conEnvioSelect = document.getElementById("conEnvio");
-        const costoEnvioFila = document.getElementById("costoEnvioFila");
-
-        conEnvioSelect.addEventListener("change", function () {
-            costoEnvioFila.style.display = conEnvioSelect.value === "Si" ? "table-row" : "none";
-            if (conEnvioSelect.value !== "Si") {
-                document.getElementById("costoEnvio").value = "";
-            }
+    // Manejo de autocompletado de clientes
+    const clientes = <?php echo $clientes_json; ?>;
+    const nombreClienteInput = document.getElementById('nombreCliente');
+    const clientesList = document.getElementById('clientesList');
+    
+    function updateDatalist(clientes) {
+        clientesList.innerHTML = '';
+        clientes.forEach(cliente => {
+            const option = document.createElement('option');
+            option.value = `${cliente.nombre}`;
+            option.dataset.id = cliente.id;
+            clientesList.appendChild(option);
         });
+    }
+    
+    // Llenar el datalist inicialmente
+    updateDatalist(clientes);
+    
+    // Actualizar el datalist mientras se escribe
+    nombreClienteInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        if (searchTerm.length < 2) return;
         
-        // Calcular monto en efectivo
-        const pagoTransferencia = document.getElementById("pagoTransferencia");
-        const pagoEfectivo = document.getElementById("pagoEfectivo");
-        const granTotal = <?php echo $gran_total; ?>;
-
-        pagoEfectivo.value = granTotal.toFixed(2); // Mostrar total inicial
-
+        const filtered = clientes.filter(cliente => 
+            cliente.nombre.toLowerCase().includes(searchTerm) ||
+            (cliente.telefono && cliente.telefono.includes(searchTerm)) ||
+            (cliente.cuil && cliente.cuil.includes(searchTerm))
+        );
         
-        function calcularMontoEfectivo() {
-            const transferencia = parseFloat(pagoTransferencia.value) || 0;
-
-            if (transferencia > granTotal) {
-                Swal.fire({
-                    title: "Monto inválido",
-                    text: "El monto en transferencia no puede superar el total de la compra.",
-                    icon: "error",
-                    confirmButtonText: "Aceptar"
-                }).then(() => {
-                    pagoTransferencia.value = "";
-                    pagoEfectivo.value = granTotal.toFixed(2);
-                });
-            } else {
-                const efectivo = granTotal - transferencia;
-                pagoEfectivo.value = efectivo.toFixed(2);
-            }
-        }
-        
-        pagoTransferencia.addEventListener("input", calcularMontoEfectivo);
+        updateDatalist(filtered);
     });
-
-    //Antes de guardar el pedido confirma
-    document.addEventListener("DOMContentLoaded", function () {
-    const formulario = document.querySelector("form.form-signin");
-
-    formulario.addEventListener("submit", function (e) {
-        e.preventDefault(); // Prevenir envío inmediato
-
-        Swal.fire({
-            title: "¿Registrar Pedido?",
-            text: "¿Deseás registrar el Pedido?",
-            icon: "question",
-            showCancelButton: true,
-            confirmButtonText: "Sí, Registrar",
-            cancelButtonText: "No, Volver"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                formulario.submit(); // Enviar si acepta
-            }
-        });
-    });
-
-    // (el resto de tu script que ya estaba)
 });
 </script>
 

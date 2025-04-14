@@ -33,6 +33,11 @@ $routes->setAutoRoute(true);
 // route since we don't have to scan directories.
 $routes->get('/', 'Login_controller');
 
+//Cobrar Pedidos/Fiados
+$routes->get('cobrarPedido/(:num)', 'Pedidos_controller::CargarVenta/$1');
+$routes->get('cancelarCobro/(:num)', 'Pedidos_controller::CancelarCobro/$1');
+$routes->get('buscar_clientes', 'Pedidos_controller::buscar_clientes');
+
 //Todo sobre Pedidos
 $routes->get('/pedidosCompletados', 'Pedidos_controller::PedidosCompletados');
 $routes->post('/filtrarPedidos', 'Pedidos_controller::filtrarPedidos');

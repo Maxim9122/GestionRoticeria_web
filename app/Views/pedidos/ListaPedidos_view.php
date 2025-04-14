@@ -25,6 +25,11 @@
         $session = session();
         $id_cliente_seleccionado = $session->get('id_cliente') ?? '';
         $id_pedido = $session->get('id_pedido') ?? '';
+
+        $estado = '';
+        if ($session->has('estado')) {
+            $estado = $session->get('estado');
+        }
         ?>
 
 <div style="width: 100%;">
@@ -38,12 +43,12 @@
                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-checklist" viewBox="0 0 16 16">
                 <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
                 <path d="M7 5.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0zM7 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0z"/>
-    </svg> Agendados Todos</a>
+    </svg>Pedidos No Entregados</a>
    <a class="button" href="<?php echo base_url('pedidosCompletados');?>">
                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-checklist" viewBox="0 0 16 16">
                 <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
                 <path d="M7 5.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0zM7 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0z"/>
-    </svg>Despachados</a>
+    </svg>Pedidos Todos</a>
   <br><br>
   <?php $Recaudacion = 0; ?>
   <table class="table table-responsive table-hover" id="users-list">
@@ -102,18 +107,20 @@
                 </a>
                 <?php } ?>
             </li>
+            <?php if ($estado == '') { ?>
             <?php if($p['modo_compra'] == 'Compra'){ ?> 
             <li>
-                <a class="text-success btn" onclick="mostrarConfirmacion(event, <?php echo $p['id']; ?>)">
+                <a class="text-success btn" href="<?php echo base_url('cobrarPedido/'.$p['id']); ?>">
                     ✅ Cobrar
                 </a>
             </li>
             <?php } else if($p['modo_compra'] == 'Fiado') { ?>
             <li>
-                <a class="text-success btn" onclick="mostrarConfirmacion(event, <?php echo $p['id']; ?>)">
-                    ✅ Entrega
+                <a class="text-success btn" href="<?php echo base_url('entregarFiado/'.$p['id']); ?>">
+                    ✅ Entregar
                 </a>
             </li>
+            <?php } ?>
             <?php } ?>
                 </ul>
             </div>

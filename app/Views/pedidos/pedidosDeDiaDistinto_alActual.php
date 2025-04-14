@@ -25,11 +25,15 @@
         $session = session();
         $id_cliente_seleccionado = $session->get('id_cliente') ?? '';
         $id_pedido = $session->get('id_pedido') ?? '';
+        $estado = '';
+        if ($session->has('estado')) {
+            $estado = $session->get('estado');
+        }
         ?>
 
 <div style="width: 100%;">
     <br>
-<h2 class="textoColor" align="center">Listado de todos los Pedidos Pendientes</h2>
+<h2 class="textoColor" align="center">Listado de Pedidos No Entregados</h2>
         <br>
   <div style="text-align: end;">
   
@@ -93,18 +97,15 @@
                     ❌ Cancelar
                 </a>
             </li>
+            <?php if ($estado == '') { ?>
             <li>
                 <?php if(!$id_pedido){?>
                 <a href="<?php echo base_url('cargar_pedido/'.$p['id']); ?>">
                     ✏️ Modificar
                 </a>
                 <?php } ?>
-            </li> 
-            <li>
-                <a class="text-success btn" onclick="mostrarConfirmacion(event, <?php echo $p['id']; ?>)">
-                    ✅ Listo
-                </a>
-            </li>
+            </li>    
+            <?php } ?>       
                 </ul>
             </div>
         </td>

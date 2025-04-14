@@ -382,21 +382,32 @@ public function productosAgregados() {
     }
 
 
-    //Muestra los detalles de la venta y confirma(función guarda_compra())
-	function muestra_compra()
-	{
+    function muestra_compra()
+    {
         $session = session();
         // Verifica si el usuario está logueado
         if (!$session->has('id')) { 
             return redirect()->to(base_url('login')); // Redirige al login si no hay sesión
         }
-		$ClientesModel = new Clientes_model();
-        $datos['clientes'] = $ClientesModel->getClientes();
-		$data['titulo'] = 'Confirmar compra';
-		echo view('navbar/navbar');
-		echo view('header/header',$data);		
-		echo view('carrito/confirmarCompra',$datos);
-		echo view('footer/footer');
+        
+        $ClientesModel = new Clientes_model();
+        // Obtener todos los clientes (o los campos necesarios)
+        $clientes = $ClientesModel->getClientes();
+        
+        // Preparar los datos para el autocompletado
+        $datos['clientes'] = $clientes;
+        $datos['clientes_json'] = json_encode(array_map(function($cliente) {
+            return [
+                'id' => $cliente['id_cliente'],
+                'nombre' => $cliente['nombre']                
+            ];
+        }, $clientes));
+        
+        $data['titulo'] = 'Confirmar compra';
+        echo view('navbar/navbar');
+        echo view('header/header',$data);        
+        echo view('carrito/confirmarCompra',$datos);
+        echo view('footer/footer');
     }
 
 
@@ -405,10 +416,6 @@ public function guarda_compra($id_pedido = null)
 {    
     $cart = \Config\Services::cart();
     $session = session();
-    
-    if (!$cart || empty($cart->contents())) {
-        return redirect()->to(base_url('catalogo'));
-    }
 
     $id_usuario = $session->get('id');    
     $monto_transfer = $this->request->getVar('pagoTransferencia');
@@ -432,6 +439,38 @@ public function guarda_compra($id_pedido = null)
     $cabecera_model = new Cabecera_model();
     $VentaDetalle_model = new VentaDetalle_model();
     $Producto_model = new Productos_model();
+
+
+// Verificar si se está Cobrando un pedido
+if ($session->get('estado') == 'Cobrando') {
+    $id_pedido_mod = $session->get('id_pedido');
+
+    // Restaurar los datos de la cabecera
+    $cabecera_model->update($id_pedido_mod, [
+        'fecha'        => $fecha,
+        'hora'         => $hora,
+        'fecha_pedido' => $fecha,
+        'id_cliente'   => 1,
+        'nombre_prov_client' => $nombre_cliente,
+        'id_usuario'   => $id_usuario,
+        'total_venta'  => $total,
+        'modo_compra'  => $modo_compra,            
+        'tipo_compra'  => $tipo_compra,
+        'monto_efectivo' => $monto_efec,
+        'monto_transfer' => $monto_transfer,
+        'costo_envio' => $costo_envio,
+        'estado' => 'Cobrado'
+    ]);
+
+    // Limpiar
+    $cart->destroy();
+    $session->remove(['id_pedido', 'id_cliente_pedido', 'nombre_cliente', 'fecha_pedido', 'tipo_compra', 'modo_compra', 'estado']);
+
+    session()->setFlashdata('msg', 'Pedido Cobrado.!');
+    return redirect()->to('catalogo');
+    
+    } 
+
 
     // Verificar si se está modificando un pedido existente
     if ($session->get('estado') == 'Modificando') {

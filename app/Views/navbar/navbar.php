@@ -55,6 +55,7 @@
 <?php $session = session();
           $nombre= $session->get('nombre');
           $perfil=$session->get('perfil_id');
+          $estado =$session->get('estado'); 
           $id=$session->get('id');?>
 
 <section class="navBarSection">
@@ -76,6 +77,53 @@
         <div id="navBar" class="navBar">
             <ul class="navList flex">
         <?php if( ($perfil =='1')) { ?>
+
+          <li class="navItem">
+          
+
+          <?php if ($estado): ?>
+          <?php 
+          $mensaje = "ATENCIÓN! Se está Procesando una Venta o Pedido";
+          $color = "orange"; // Color por defecto
+          $link = ""; // Variable para el enlace
+  
+          switch ($estado) {
+              case 'Modificando':
+                  $mensaje = "ATENCIÓN! Se está Modificando una Venta o Pedido";
+                  $color = "#FF6700"; // Naranja neón
+                  $link = base_url('CarritoList'); // Ruta del enlace
+                  break;              
+              case 'Cobrando':
+                  $mensaje = "ATENCIÓN! Se está Cobrando una Venta o Pedido";
+                  $color = "#00FF00"; // Verde neón
+                  $link = base_url('casiListo'); // Ruta del enlace
+                  break;
+          }
+          ?>
+  
+          <h5 class="resaltado" style="
+          color: white; 
+          font-weight: bold; 
+          border: 1px solid <?php echo $color; ?>; 
+          padding: 7px; 
+          display: inline-block; 
+          border-radius: 5px; 
+          text-align: center;
+          text-transform: uppercase;
+          box-shadow: 0 0 3px <?php echo $color; ?>, 0 0 5px <?php echo $color; ?>;">
+          
+          
+              <a href="<?php echo $link; ?>" style="color: white; text-decoration: none;">
+                  <?php echo $mensaje; ?>
+              </a>
+          
+  
+          </h5>
+          <?php endif; ?>
+  
+  
+  
+            </li>
           
           <li class="nnavItem">
             <a href="<?= base_url('/catalogo')?>" class="btn">Productos</a>
@@ -126,6 +174,58 @@
           </li>
 
           <?php } else if( (($perfil =='2')) ) { ?>
+
+            <li class="navItem">
+          
+
+          <?php if ($estado): ?>
+          <?php 
+          $mensaje = "ATENCIÓN! Se está Procesando una Venta o Pedido";
+          $color = "orange"; // Color por defecto
+          $link = ""; // Variable para el enlace
+  
+          switch ($estado) {
+              case 'Modificando':
+                  $mensaje = "ATENCIÓN! Se está Modificando una Venta o Pedido";
+                  $color = "#FF6700"; // Naranja neón
+                  $link = base_url('CarritoList'); // Ruta del enlace
+                  break;
+              case 'Modificando_SF':
+                  $mensaje = "ATENCIÓN! Se está Modificando una Venta o Pedido";
+                  $color = "#FF6700"; // Naranja neón
+                  $link = base_url('CarritoList'); // Ruta del enlace
+                  break;
+              case 'Cobrando':
+                  $mensaje = "ATENCIÓN! Se está Cobrando una Venta o Pedido";
+                  $color = "#00FF00"; // Verde neón
+                  $link = base_url('casiListo'); // Ruta del enlace
+                  break;
+          }
+          ?>
+  
+          <h5 class="resaltado" style="
+          color: white; 
+          font-weight: bold; 
+          border: 1px solid <?php echo $color; ?>; 
+          padding: 7px; 
+          display: inline-block; 
+          border-radius: 5px; 
+          text-align: center;
+          text-transform: uppercase;
+          box-shadow: 0 0 3px <?php echo $color; ?>, 0 0 5px <?php echo $color; ?>;">
+          
+          
+              <a href="<?php echo $link; ?>" style="color: white; text-decoration: none;">
+                  <?php echo $mensaje; ?>
+              </a>
+          
+  
+          </h5>
+          <?php endif; ?>
+  
+  
+  
+          </li>
           <li class="navItem">
             <h5 class="colorTexto2"><?php echo "Bienvenido ".$nombre?></h5>
           </li>
