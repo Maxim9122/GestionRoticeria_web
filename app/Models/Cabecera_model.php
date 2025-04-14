@@ -171,19 +171,19 @@ class Cabecera_model extends Model
     {
     return $this->db->table('ventas_cabecera')->delete(['id' => $id_pedido]);
     }
+    
 
-
-    // Cambia el estado del turno
-    public function cambiarEstado($id_turno, $estado)
+    // Cambia el estado del Pedido
+    public function fiadoEntregado($id_pedido)
     {
         date_default_timezone_set('America/Argentina/Buenos_Aires');
         $fechaHoy = date('d-m-Y');
         $horaEntrega = date('H:i:s');
-        return $this->update($id_turno, [
-                'estado' => $estado,
+        return $this->update($id_pedido, [
+                'estado' => 'Entregado',
                 'fecha_pedido' => $fechaHoy,
                 'hora_entrega' => $horaEntrega
-            ]); // Asegúrate de que el campo "estado" existe en la base de datos
+            ]); 
                                             
     }
 

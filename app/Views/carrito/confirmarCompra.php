@@ -133,6 +133,7 @@ endif;
                     </a>
                 <?php }  ?>
                 <?php echo form_hidden('id_pedido', $id_pedido); ?>
+                <?php echo form_hidden('total_venta', ($gran_total > 0 ? $gran_total : $total_venta)); ?>
                 <?php if ($estado == 'Cobrando'): ?>
                     <button type="submit" id="btnCobrar" class="btn">Cobrar</button>
                 <?php else: ?>

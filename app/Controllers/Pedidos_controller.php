@@ -16,6 +16,12 @@ class Pedidos_controller extends Controller{
            helper(['form', 'url']);
 	}
 
+    public function entregarFiado($id_pedido){
+        $cabecera_model = new Cabecera_model();
+        $cabecera_model->fiadoEntregado($id_pedido);
+        session()->setFlashdata('msg', 'Pedido Entregado!');
+        return redirect()->to('pedidos');
+    }
 
      //Cargo la venta a Cobrar
      public function CargarVenta($id_vta)
@@ -71,7 +77,7 @@ class Pedidos_controller extends Controller{
          }
          
          session()->setFlashdata('msg', 'Otro cajero esta con esta Venta!');
-         return redirect()->to('caja');
+         return redirect()->to('pedidos');
          }
      
          //Cancelar Cobro de la venta

@@ -115,11 +115,11 @@
                 </a>
             </li>
             <?php } else if($p['modo_compra'] == 'Fiado') { ?>
-            <li>
-                <a class="text-success btn" href="<?php echo base_url('entregarFiado/'.$p['id']); ?>">
-                    ✅ Entregar
-                </a>
-            </li>
+                <li>                
+                    <a href="#" class="text-success btn" onclick="confirmarPedidoFiado(<?php echo $p['id']; ?>)">
+                        ✅ Entregar
+                    </a>
+                </li>
             <?php } ?>
             <?php } ?>
                 </ul>
@@ -266,7 +266,23 @@ document.getElementById('hora').value = formattedTime;
 
 </script>
 
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function confirmarPedidoFiado(pedidoId) {
+        Swal.fire({
+            title: "¿El Pedido Fiado se Entregó?",       
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Sí, Entregado",
+            cancelButtonText: "No, Volver"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "<?php echo base_url('entregarFiado'); ?>/" + pedidoId;
+            }
+        });
+        return false;
+    }
+</script>
 
 
 
