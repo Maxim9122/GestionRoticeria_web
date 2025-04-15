@@ -60,7 +60,7 @@
              <th>Total</th>
              <th>Fecha Registro</th>
              <th>Hora Reg.</th>
-             <th>Fecha Entrega</th>
+             <th>Modo Compra</th>
              <th>Estado</th>                          
              <th>Acciones</th>
           </tr>
@@ -76,7 +76,7 @@
         <td>$<?php echo $p['total_venta'];?></td>
         <td><?php echo $p['fecha'];?></td>
         <td><?php echo $p['hora'];?></td>
-        <td><?php echo $p['fecha_pedido'];?></td>
+        <td><?php echo $p['modo_compra'];?></td>
         <td><?php echo $p['estado'];?></td>
         <!-- Formulario por cada turno -->
         <form id="pedidoForm" action="<?php echo base_url('pedido_actualizar/'.$p['id']); ?>" method="POST">

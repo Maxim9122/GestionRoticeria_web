@@ -390,18 +390,10 @@ public function productosAgregados() {
             return redirect()->to(base_url('login')); // Redirige al login si no hay sesión
         }
         
-        $ClientesModel = new Clientes_model();
-        // Obtener todos los clientes (o los campos necesarios)
-        $clientes = $ClientesModel->getClientes();
+        $ClientesModel = new Clientes_model();     
         
         // Preparar los datos para el autocompletado
-        $datos['clientes'] = $clientes;
-        $datos['clientes_json'] = json_encode(array_map(function($cliente) {
-            return [
-                'id' => $cliente['id_cliente'],
-                'nombre' => $cliente['nombre']                
-            ];
-        }, $clientes));
+        $datos['clientes_json'] = json_encode($ClientesModel->findAll());
         
         $data['titulo'] = 'Confirmar compra';
         echo view('navbar/navbar');
@@ -418,9 +410,10 @@ public function guarda_compra($id_pedido = null)
     $session = session();
 
     $id_usuario = $session->get('id');    
-    $monto_transfer = $this->request->getVar('pagoTransferencia');
-    $monto_efec = $this->request->getVar('pagoEfectivo');
-    $costo_envio = $this->request->getVar('costoEnvio');
+    $monto_transfer = $this->request->getVar('pagoTransferencia') ?: 0;
+    $monto_efec = $this->request->getVar('pagoEfectivo') ?: 0;
+    $costo_envio = $this->request->getVar('costoEnvio') ?: 0;
+
     $nombre_cliente = $this->request->getVar('nombre_prov');
     $total = $this->request->getPost('total_venta');
 

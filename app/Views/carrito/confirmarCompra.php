@@ -56,7 +56,7 @@ endif;
                     <td style="color:rgb(192, 250, 214);"><strong>Total General:</strong></td>
                     <td style="color: #ffff;">
                         <strong id="totalCompra">
-                    $<?php echo number_format(($gran_total > 0 ? $gran_total : $total_venta), 2, ',', '.'); ?>
+                    $<?php echo number_format(($gran_total > 0 ? $gran_total : $total_venta), 2, '.', ','); ?>
                         </strong>
                     </td>
                 </tr>
@@ -96,7 +96,8 @@ endif;
                             <option value="Fiado">Fiado</option>                                                    
                         </select>                    
                     </td>
-                </tr>                
+                </tr>    
+                <?php if($estado == 'Cobrando'){ ?>            
                 <tr>
                     <td style="color: rgb(192, 250, 214);"><strong>Con Envío:</strong></td>
                     <td>
@@ -112,6 +113,7 @@ endif;
                         <input class="selector" type="text" id="costoEnvio" name="costoEnvio" placeholder="Costo de envío en $" maxlength="15">
                     </td>
                 </tr>
+                <?php } ?>
                 <?php echo form_hidden('total_venta', $gran_total); ?>
             </table>
             
@@ -148,7 +150,7 @@ endif;
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 // Función para el botón Cobrar
-document.getElementById('btnCobrar').addEventListener('click', function(e) {
+document.getElementById('btnCobrar')?.addEventListener('click', function(e) {
     e.preventDefault();
     
     Swal.fire({
@@ -221,14 +223,16 @@ document.addEventListener("DOMContentLoaded", function () {
     const conEnvioSelect = document.getElementById("conEnvio");
     const costoEnvioFila = document.getElementById("costoEnvioFila");
 
-    conEnvioSelect.addEventListener("change", function () {
-        costoEnvioFila.style.display = conEnvioSelect.value === "Si" ? "table-row" : "none";
-        if (conEnvioSelect.value !== "Si") {
-            document.getElementById("costoEnvio").value = "";
-        }
-    });
+    if (conEnvioSelect && costoEnvioFila) {
+        conEnvioSelect.addEventListener("change", function () {
+            costoEnvioFila.style.display = conEnvioSelect.value === "Si" ? "table-row" : "none";
+            if (conEnvioSelect.value !== "Si") {
+                document.getElementById("costoEnvio").value = "";
+            }
+        });
+    }
     
-    // Calcular monto en efectivo
+    // Calcular monto en efectivo (solo cuando se está cobrando)
     const pagoTransferencia = document.getElementById("pagoTransferencia");
     const pagoEfectivo = document.getElementById("pagoEfectivo");
     const granTotal = <?php echo ($gran_total > 0 ? $gran_total : $total_venta); ?>;
@@ -260,37 +264,82 @@ document.addEventListener("DOMContentLoaded", function () {
         pagoTransferencia.addEventListener("input", calcularMontoEfectivo);
     }
 
-    // Manejo de autocompletado de clientes
-    const clientes = <?php echo $clientes_json; ?>;
+    // Manejo de autocompletado de clientes (funciona en todos los casos)
+    const clientes = <?php echo isset($clientes_json) ? $clientes_json : '[]'; ?>;
     const nombreClienteInput = document.getElementById('nombreCliente');
     const clientesList = document.getElementById('clientesList');
-    
-    function updateDatalist(clientes) {
-        clientesList.innerHTML = '';
-        clientes.forEach(cliente => {
-            const option = document.createElement('option');
-            option.value = `${cliente.nombre}`;
-            option.dataset.id = cliente.id;
-            clientesList.appendChild(option);
+
+    if (nombreClienteInput && clientesList) {
+        function updateDatalist(clientes) {
+            clientesList.innerHTML = '';
+            clientes.forEach(cliente => {
+                const option = document.createElement('option');
+                option.value = cliente.nombre;
+                // Agregar más datos si es necesario (teléfono, CUIL, etc.)
+                if (cliente.telefono) option.dataset.telefono = cliente.telefono;
+                if (cliente.cuil) option.dataset.cuil = cliente.cuil;
+                option.dataset.id = cliente.id;
+                clientesList.appendChild(option);
+            });
+        }
+
+        // Llenar el datalist inicialmente con todos los clientes
+        updateDatalist(clientes);
+
+        // Actualizar el datalist mientras se escribe
+        nombreClienteInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            // Si el campo está vacío, mostrar todos los clientes
+            if (searchTerm === '') {
+                updateDatalist(clientes);
+                return;
+            }
+            
+            // Filtrar clientes que coincidan con el término de búsqueda
+            const filtered = clientes.filter(cliente => 
+                cliente.nombre.toLowerCase().includes(searchTerm) ||
+                (cliente.telefono && cliente.telefono.includes(searchTerm)) ||
+                (cliente.cuil && cliente.cuil.includes(searchTerm))
+            );
+            
+            updateDatalist(filtered.length > 0 ? filtered : clientes);
+        });
+
+        // Permitir selección con teclado
+        nombreClienteInput.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                const options = Array.from(clientesList.querySelectorAll('option'));
+                if (options.length === 0) return;
+                
+                const selectedIndex = options.findIndex(opt => opt.selected);
+                let newIndex = 0;
+                
+                if (e.key === 'ArrowDown') {
+                    newIndex = selectedIndex < options.length - 1 ? selectedIndex + 1 : 0;
+                } else {
+                    newIndex = selectedIndex > 0 ? selectedIndex - 1 : options.length - 1;
+                }
+                
+                options.forEach((opt, index) => {
+                    opt.selected = index === newIndex;
+                    if (index === newIndex) {
+                        nombreClienteInput.value = opt.value;
+                    }
+                });
+            } else if (e.key === 'Enter' && nombreClienteInput.value) {
+                e.preventDefault();
+            }
+        });
+
+        // Mostrar sugerencias al hacer clic en el campo
+        nombreClienteInput.addEventListener('focus', function() {
+            if (this.value === '') {
+                updateDatalist(clientes);
+            }
         });
     }
-    
-    // Llenar el datalist inicialmente
-    updateDatalist(clientes);
-    
-    // Actualizar el datalist mientras se escribe
-    nombreClienteInput.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        if (searchTerm.length < 2) return;
-        
-        const filtered = clientes.filter(cliente => 
-            cliente.nombre.toLowerCase().includes(searchTerm) ||
-            (cliente.telefono && cliente.telefono.includes(searchTerm)) ||
-            (cliente.cuil && cliente.cuil.includes(searchTerm))
-        );
-        
-        updateDatalist(filtered);
-    });
 });
 </script>
 
@@ -363,5 +412,32 @@ document.addEventListener("DOMContentLoaded", function () {
     .btn {
         width: 100%;
     }
+}
+
+
+/* Estilo mejorado para el autocompletado */
+input[list] {
+    position: relative;
+}
+
+datalist {
+    position: absolute;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: #282a36;
+    border: 1px solid #50fa7b;
+    border-radius: 0 0 5px 5px;
+    width: 85%;
+    z-index: 1000;
+}
+
+datalist option {
+    padding: 8px;
+    cursor: pointer;
+    color: #f8f8f2;
+}
+
+datalist option:hover {
+    background-color: #44475a;
 }
 </style>
