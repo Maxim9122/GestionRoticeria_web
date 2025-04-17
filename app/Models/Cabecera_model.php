@@ -24,7 +24,7 @@ class Cabecera_model extends Model
         $builder = $db->table($this->table . ' u');
         $builder->select("
             u.id, 
-            c.nombre AS nombre_cliente, 
+            u.nombre_prov_client AS nombre_cliente, 
             v.nombre AS nombre_vendedor, 
             u.estado, 
             u.total_venta,
@@ -33,10 +33,7 @@ class Cabecera_model extends Model
                 WHEN u.tipo_compra = 'Pedido' THEN u.fecha_pedido 
                 ELSE u.fecha 
             END) AS fecha, 
-            (CASE 
-                WHEN u.tipo_compra = 'Pedido' THEN u.hora_entrega
-                ELSE u.hora 
-            END) AS hora, 
+            u.hora AS hora, 
             u.tipo_pago            
         ");
         $builder->join('cliente c', 'u.id_cliente = c.id_cliente');
@@ -102,7 +99,10 @@ class Cabecera_model extends Model
         u.aclaraciones, 
         c.id_cae, 
         c.cae, 
-        c.vto_cae
+        c.vto_cae,
+        v.monto_efectivo,
+        v.monto_transfer,
+        v.total_venta
     ');
     
     $builder->where('u.venta_id', $idVenta);

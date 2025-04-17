@@ -412,6 +412,18 @@ public function guarda_compra($id_pedido = null)
     $id_usuario = $session->get('id');    
     $monto_transfer = $this->request->getVar('pagoTransferencia') ?: 0;
     $monto_efec = $this->request->getVar('pagoEfectivo') ?: 0;
+
+    $tipo_pago = '';
+    if ($monto_efec > 0 && $monto_transfer == 0) {
+        $tipo_pago = 'Efectivo';
+    } elseif ($monto_transfer > 0 && $monto_efec == 0) {
+        $tipo_pago = 'Transferencia';
+    } elseif ($monto_efec > 0 && $monto_transfer > 0) {
+        $tipo_pago = 'Mixto';
+    } else {
+        $tipo_pago = 'Sin pago'; // opcional, para cubrir el caso de ambos en 0
+    }
+
     $costo_envio = $this->request->getVar('costoEnvio') ?: 0;
 
     $nombre_cliente = $this->request->getVar('nombre_prov');
@@ -449,6 +461,7 @@ if ($session->get('estado') == 'Cobrando') {
         'total_venta'  => $total,
         'modo_compra'  => $modo_compra,            
         'tipo_compra'  => $tipo_compra,
+        'tipo_pago'    => $tipo_pago,
         'monto_efectivo' => $monto_efec,
         'monto_transfer' => $monto_transfer,
         'costo_envio' => $costo_envio,
@@ -496,6 +509,7 @@ if ($session->get('estado') == 'Cobrando') {
             'fecha'        => $fecha,
             'hora'         => $hora,
             'fecha_pedido' => $fecha,
+            'hora_entrega' => $hora,
             'id_cliente'   => 1,
             'nombre_prov_client' => $nombre_cliente,
             'id_usuario'   => $id_usuario,
@@ -542,6 +556,7 @@ if ($session->get('estado') == 'Cobrando') {
 public function generarTicket($id_cabecera)
 {
     // Cargar los modelos necesarios
+    $categoriaModel = new \App\Models\categoria_model();
     $ventaModel = new \App\Models\Cabecera_model();
     $detalleModel = new \App\Models\VentaDetalle_model();
     $productoModel = new \App\Models\Productos_model();
@@ -554,10 +569,28 @@ public function generarTicket($id_cabecera)
     //print_r($detalles);
     //exit;
     // Obtener los productos relacionados
-    $productos = [];
+    $productosAgrupados = [
+        'hamburguesas_lomitos' => [],
+        'pizzas_empanadas' => [],
+    ];
+    
     foreach ($detalles as $detalle) {
-        $productos[$detalle['producto_id']] = $productoModel->find($detalle['producto_id']);
+        $producto = $productoModel->find($detalle['producto_id']);
+        $categoria = $categoriaModel->find($producto['categoria_id']);
+    
+        if (in_array(strtolower($categoria['descripcion']), ['hamburguesas', 'lomitos'])) {
+            $productosAgrupados['hamburguesas_lomitos'][] = [
+                'detalle' => $detalle,
+                'producto' => $producto
+            ];
+        } elseif (in_array(strtolower($categoria['descripcion']), ['pizzas', 'empanadas','empanadas_mixtas'])) {
+            $productosAgrupados['pizzas_empanadas'][] = [
+                'detalle' => $detalle,
+                'producto' => $producto
+            ];
+        }
     }
+    
 
     // Obtener la información del cliente
     $cliente = $clienteModel->find($cabecera['id_cliente']);
@@ -566,13 +599,6 @@ public function generarTicket($id_cabecera)
     $session = session();
     $nombreVendedor = $session->get('nombre');
     
-   /*
-    //Cambia el estado del Pedido
-    if($cabecera['tipo_compra'] == 'Pedido'){
-
-        $ventaModel->cambiarEstado($id_cabecera, 'Sin_Facturar');
-    }
-        */
     // Crear el HTML para la vista previa
     ob_start();
     ?>
@@ -582,7 +608,7 @@ public function generarTicket($id_cabecera)
             /* Estilos CSS para el ticket */
             body {
                 font-family: Arial, sans-serif; /* Cambiar a una fuente más legible */
-                margin: 0;
+                margin-top: 20px;
                 padding: 0;
                 width: 220px; /* Ancho del ticket */
             }
@@ -603,7 +629,7 @@ public function generarTicket($id_cabecera)
             }
             .ticket p {
                 margin: 2px 0;
-                font-size: 10px;
+                font-size: 14px;
                 font-weight: bold;
                 text-align: justify; /* Justificar el texto */
             }
@@ -630,27 +656,35 @@ public function generarTicket($id_cabecera)
         </style>
     </head>
     <body>
-        <div class="ticket">
-            <h3>Pedido Nro: <?= $cabecera['id'] ?></h3>
+        <div class="ticket">             
 
-            <hr>
+        <!-- Sección PLANCHERO -->
+        <?php if (!empty($productosAgrupados['hamburguesas_lomitos'])): ?>
+            <h1>Pedido Nro: <?= $cabecera['id'] ?></h1>  
+            <h2>PLANCHERO</h2>
+            <?php foreach ($productosAgrupados['hamburguesas_lomitos'] as $item): ?>
+                <p><?= $item['producto']['nombre'] ?> -> Cant:<?= $item['detalle']['cantidad'] ?> </p>
+                <?php if (!empty($item['detalle']['aclaraciones'])): ?>
+                    <p style="margin-left: 5px;">* <?= $item['detalle']['aclaraciones'] ?></p>
+                <?php endif; ?>
+                <hr>
+            <?php endforeach; ?>
+        <?php endif; ?>
 
-            <!-- Información de la venta -->
-            <p>Fecha: <?= ($cabecera['tipo_compra'] == 'Pedido') ? date('d-m-Y H:i:s') : $cabecera['fecha'] . ' ' . $cabecera['hora']; ?></p>
-            <p>Cliente: <?= $cliente['cuil'] > 0 ? $cliente['nombre'] . ' Cuil: ' . $cliente['cuil'] : $cliente['nombre'] ?></p>
-            <p>Atendido por: <?= $nombreVendedor ?></p>
-            <hr>
 
-            <!-- Detalle de la compra -->
-            <div class="details" style="width: 100%; font-size: 10px;">
-                <h3>Productos Adquiridos</h3>
-                <?php foreach ($detalles as $detalle): ?>
-                    <div>
-                        <p><?= $productos[$detalle['producto_id']]['nombre'] ?> -><?= $detalle['cantidad'] ?> x $<?= number_format($detalle['precio'], 2) ?></p>
-                    </div>
-                <?php endforeach; ?>            
-            </div>
-            <hr>
+        <!-- Sección HORNO/OTROS -->
+        <?php if (!empty($productosAgrupados['pizzas_empanadas'])): ?>
+            <h1 style="margin-top:50px;">Pedido Nro: <?= $cabecera['id'] ?></h1>
+            <h2>HORNO/OTROS</h2>
+            <?php foreach ($productosAgrupados['pizzas_empanadas'] as $item): ?>
+                <p><?= $item['producto']['nombre'] ?> -> Cant:<?= $item['detalle']['cantidad'] ?></p>
+                <?php if (!empty($item['detalle']['aclaraciones'])): ?>
+                    <p style="margin-left: 5px;">* <?= $item['detalle']['aclaraciones'] ?></p>
+                <?php endif; ?>
+                <hr>
+            <?php endforeach; ?>
+        <?php endif; ?>
+   
             
         </div>
     </body>

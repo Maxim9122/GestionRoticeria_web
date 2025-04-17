@@ -57,10 +57,9 @@
   <table class="table table-responsive table-hover" id="users-list">
        <thead>
           <tr class="colorTexto2">
-             <th>Nro Venta</th>
+             <th>Nro Pedido</th>
              <th>Cliente</th>
-             <th>Vendedor</th>
-             <th>Tipo Compra</th>
+             <th>Vendedor</th>            
              <th>ESTADO</th>
              <th>Total Venta</th>
              <th>Fecha</th>
@@ -75,8 +74,7 @@
           <tr>
              <td><?php echo $vta['id']; ?></td>
              <td><?php echo $vta['nombre_cliente']; ?></td>
-             <td><?php echo $vta['nombre_vendedor']; ?></td>
-             <td><?php echo $vta['tipo_compra']; ?></td>
+             <td><?php echo $vta['nombre_vendedor']; ?></td>            
              <td><?php echo $vta['estado']; ?></td>
              <td>$<?php echo $vta['total_venta']; ?></td>
              <td><?php echo $vta['fecha'];?></td>

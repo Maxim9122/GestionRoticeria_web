@@ -127,10 +127,32 @@
               <td><?php echo $vta['nombre']; ?></td>
               <td><?php echo $vta['cantidad']; ?></td>
               <td><?php echo $vta['aclaraciones']; ?></td>
-              <td><?php echo $vta['precio']; ?></td>
-              <td><?php echo $vta['total']; ?></td>
+              <td>$ <?php echo $vta['precio']; ?></td>
+              <td>$ <?php echo $vta['total']; ?></td>
               
             </tr>
+          <?php endforeach; ?>
+        <?php endif; ?>
+      </tbody>
+    </table>
+<br>
+    <table class="detalle-compra-tabla comprados">
+      <thead>
+        <tr>
+          <th>Pago con Efectivo</th>
+          <th>Pago con Transferencia</th>
+          <th>Total</th>                 
+        </tr>
+      </thead>
+      <tbody>
+        <?php if ($ventas): ?>
+          <?php foreach ($ventas as $vta): ?>
+            <tr>
+              <td>$ <?php echo $vta['monto_efectivo']; ?></td>
+              <td>$ <?php echo $vta['monto_transfer']; ?></td>              
+              <td>$ <?php echo $vta['total_venta']; ?></td>
+            </tr>
+            <?php break; // Salir del bucle después del primer elemento ?>
           <?php endforeach; ?>
         <?php endif; ?>
       </tbody>

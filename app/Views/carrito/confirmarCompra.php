@@ -36,6 +36,11 @@ if ($session->has('total_venta')) {
     $total_venta = $session->get('total_venta');
 }
 
+$modo_compra = '';
+if ($session->has('modo_compra')) {
+    $modo_compra = $session->get('modo_compra');
+}
+
 $gran_total = 0;
 if ($cart):
     foreach ($cart->contents() as $item):
@@ -89,13 +94,13 @@ endif;
                 </tr>
                 <?php } ?>
                 <tr>
-                    <td style="color: rgb(192, 250, 214);"><strong>Modo de Compra:</strong></td>
-                    <td>
-                        <select name="modo_compra" id="tipoCompra" class="selector">
-                            <option value="Compra">Compra</option>   
-                            <option value="Fiado">Fiado</option>                                                    
-                        </select>                    
-                    </td>
+                <td style="color: rgb(192, 250, 214);"><strong>Modo de Compra:</strong></td>
+                <td>
+                    <select name="modo_compra" id="tipoCompra" class="selector">
+                        <option value="Compra" <?= ($modo_compra == 'Compra' || empty($modo_compra)) ? 'selected' : '' ?>>Compra</option>
+                        <option value="Fiado" <?= ($modo_compra == 'Fiado') ? 'selected' : '' ?>>Fiado</option>
+                    </select>                    
+                </td>
                 </tr>    
                 <?php if($estado == 'Cobrando'){ ?>            
                 <tr>
@@ -139,7 +144,7 @@ endif;
                 <?php if ($estado == 'Cobrando'): ?>
                     <button type="submit" id="btnCobrar" class="btn">Cobrar</button>
                 <?php else: ?>
-                    <?php echo form_submit('confirmar', 'Confirmar', "class='btn'"); ?>
+                    <?php echo form_submit('confirmar', 'Confirmar', "class='btn' id='btnConfirmarPedido'"); ?>
                 <?php endif; ?>
             </section>
         </div>
@@ -148,6 +153,26 @@ endif;
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.getElementById('btnConfirmarPedido')?.addEventListener('click', function(e) {
+    e.preventDefault();
+
+    Swal.fire({
+        title: 'Confirmar el Pedido?',        
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, Registrar',
+        cancelButtonText: 'No, Cancelar',
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.querySelector("form.form-signin").submit();
+        }
+    });
+});
+</script>
+
 <script>
 // Función para el botón Cobrar
 document.getElementById('btnCobrar')?.addEventListener('click', function(e) {

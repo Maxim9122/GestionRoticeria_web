@@ -195,7 +195,7 @@ $gran_total = isset($gran_total) ? $gran_total : 0; // Si $gran_total no está d
                             name="cart[<?= $item['id'] ?>][options][aderezos]" 
                             id="aderezos_<?= $item['id'] ?>" 
                             value="<?= isset($item['options']['aderezos']) ? $item['options']['aderezos'] : '' ?>"
-                            placeholder="Adicion ej: +huevo,+calabreza"
+                            placeholder="(Mas)Ej: +huevo,+calabreza"
                             style="width: 185px; padding: 5px;">
 
                     <?php elseif (strtolower(trim($categorias[$item['id']])) == 'empanadas_mixtas'): ?>
