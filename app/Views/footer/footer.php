@@ -16,22 +16,22 @@
         <div class="logoDiv">
             <div class="footerLogo">
                 <a href="<?= base_url('catalogo')?>" class="logo">
-                    <strong class="nombreLogo">Multirrubro Blass</strong>
+                    <strong class="nombreLogo">San Vicente Hamburgueseria</strong>
                 </a>
             </div>
             
             <div class="socials flex">
-            <a href="https://www.facebook.com/profile.php?id=100090015837568" target="_blank">
+            <a href="" target="_blank">
                 <i class="fa fa-facebook icon" aria-hidden="true"></i>
             </a>
-            <a href="https://www.instagram.com/Blass.Multirrubro" target="_blank">
+            <a href="" target="_blank">
                 <i class="fa fa-instagram icon" aria-hidden="true"></i>
             </a>
             </div>
             
             <div class="desarrollador">
                 <span>
-                    Desarrollado por <span>Maximiliano Luna / Luis Nuñez</span>
+                    Desarrollado por <span>Maximiliano Luna</span>
                     <br>
                     <span>Tel: 3841-670079</span>
                 </span>                

@@ -38,7 +38,7 @@ $routes->get('cobrarPedido/(:num)', 'Pedidos_controller::CargarVenta/$1');
 $routes->get('cancelarCobro/(:num)', 'Pedidos_controller::CancelarCobro/$1');
 $routes->get('buscar_clientes', 'Pedidos_controller::buscar_clientes');
 
-$routes->get('entregarFiado/(:num)', 'Pedidos_controller::entregarFiado/$1');
+$routes->post('entregarFiado', 'Pedidos_controller::entregarFiado');
 
 //Todo sobre Pedidos
 $routes->get('/pedidosCompletados', 'Pedidos_controller::PedidosCompletados');

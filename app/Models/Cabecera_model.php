@@ -28,7 +28,7 @@ class Cabecera_model extends Model
             v.nombre AS nombre_vendedor, 
             u.estado, 
             u.total_venta,
-            u.tipo_compra,
+            u.modo_compra,
             (CASE 
                 WHEN u.tipo_compra = 'Pedido' THEN u.fecha_pedido 
                 ELSE u.fecha 
@@ -174,7 +174,7 @@ class Cabecera_model extends Model
     
 
     // Cambia el estado del Pedido
-    public function fiadoEntregado($id_pedido)
+    public function fiadoEntregado($id_pedido,$Costo_envio)
     {
         date_default_timezone_set('America/Argentina/Buenos_Aires');
         $fechaHoy = date('d-m-Y');
@@ -182,7 +182,8 @@ class Cabecera_model extends Model
         return $this->update($id_pedido, [
                 'estado' => 'Entregado',
                 'fecha_pedido' => $fechaHoy,
-                'hora_entrega' => $horaEntrega
+                'hora_entrega' => $horaEntrega,
+                'costo_envio' => $Costo_envio
             ]); 
                                             
     }

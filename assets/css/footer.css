@@ -5,6 +5,7 @@
     color: white; /* Texto blanco */
     padding: 10px 0; /* Reducimos el espacio para que el footer no sea tan alto */
     text-align: center; /* Centra el contenido */
+    width: 100%;
 }
 
 /* Centrado del contenido */
@@ -17,7 +18,7 @@
 
 /* Estilo para los logos */
 .footerLogo {
-    font-size: 15px; /* Ajustamos el tamaño para que no sea tan grande */
+    font-size: 12px; /* Ajustamos el tamaño para que no sea tan grande */
     font-weight: bold;
 }
 

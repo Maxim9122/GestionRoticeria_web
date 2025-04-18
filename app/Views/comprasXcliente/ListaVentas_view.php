@@ -59,7 +59,8 @@
           <tr class="colorTexto2">
              <th>Nro Pedido</th>
              <th>Cliente</th>
-             <th>Vendedor</th>            
+             <th>Vendedor</th> 
+             <th>Tipo de Pedido</th>           
              <th>ESTADO</th>
              <th>Total Venta</th>
              <th>Fecha</th>
@@ -74,7 +75,8 @@
           <tr>
              <td><?php echo $vta['id']; ?></td>
              <td><?php echo $vta['nombre_cliente']; ?></td>
-             <td><?php echo $vta['nombre_vendedor']; ?></td>            
+             <td><?php echo $vta['nombre_vendedor']; ?></td> 
+             <td><?php echo $vta['modo_compra']; ?></td>           
              <td><?php echo $vta['estado']; ?></td>
              <td>$<?php echo $vta['total_venta']; ?></td>
              <td><?php echo $vta['fecha'];?></td>

@@ -16,9 +16,12 @@ class Pedidos_controller extends Controller{
            helper(['form', 'url']);
 	}
 
-    public function entregarFiado($id_pedido){
+    public function entregarFiado(){
         $cabecera_model = new Cabecera_model();
-        $cabecera_model->fiadoEntregado($id_pedido);
+        $id_pedido = $this->request->getVar('id_pedido');
+        $Costo_envio = $this->request->getVar('monto_envio');
+        //print_r($Costo_envio);exit;
+        $cabecera_model->fiadoEntregado($id_pedido,$Costo_envio);       
         session()->setFlashdata('msg', 'Pedido Entregado!');
         return redirect()->to('pedidos');
     }
