@@ -570,21 +570,21 @@ public function generarTicket($id_cabecera)
     //exit;
     // Obtener los productos relacionados
     $productosAgrupados = [
-        'hamburguesas_lomitos' => [],
-        'pizzas_empanadas' => [],
+        'planchero' => [],
+        'horno_otros' => [],
     ];
     
     foreach ($detalles as $detalle) {
         $producto = $productoModel->find($detalle['producto_id']);
         $categoria = $categoriaModel->find($producto['categoria_id']);
     
-        if (in_array(strtolower($categoria['descripcion']), ['hamburguesas', 'lomitos'])) {
-            $productosAgrupados['hamburguesas_lomitos'][] = [
+        if (in_array(strtolower($categoria['descripcion']), ['hamburguesas', 'lomitos', 'papas_f', 'sand_mila', 'hamburpizzas'])) {
+            $productosAgrupados['planchero'][] = [
                 'detalle' => $detalle,
                 'producto' => $producto
             ];
-        } elseif (in_array(strtolower($categoria['descripcion']), ['pizzas', 'empanadas','empanadas_mixtas'])) {
-            $productosAgrupados['pizzas_empanadas'][] = [
+        } elseif (in_array(strtolower($categoria['descripcion']), ['pizzas', 'empanadas','empanadas_mixtas','milas_papas'])) {
+            $productosAgrupados['horno_otros'][] = [
                 'detalle' => $detalle,
                 'producto' => $producto
             ];
@@ -659,10 +659,10 @@ public function generarTicket($id_cabecera)
         <div class="ticket">             
 
         <!-- Sección PLANCHERO -->
-        <?php if (!empty($productosAgrupados['hamburguesas_lomitos'])): ?>
+        <?php if (!empty($productosAgrupados['planchero'])): ?>
             <h1>Pedido Nro: <?= $cabecera['id'] ?></h1>  
             <h2>PLANCHERO</h2>
-            <?php foreach ($productosAgrupados['hamburguesas_lomitos'] as $item): ?>
+            <?php foreach ($productosAgrupados['planchero'] as $item): ?>
                 <p><?= $item['producto']['nombre'] ?> -> Cant:<?= $item['detalle']['cantidad'] ?> </p>
                 <?php if (!empty($item['detalle']['aclaraciones'])): ?>
                     <p style="margin-left: 5px;">* <?= $item['detalle']['aclaraciones'] ?></p>

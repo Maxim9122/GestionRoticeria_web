@@ -204,7 +204,16 @@ $gran_total = isset($gran_total) ? $gran_total : 0; // Si $gran_total no está d
                            name="cart[<?= $item['id'] ?>][options][aderezos]" 
                            id="aderezos_<?= $item['id'] ?>" 
                            value="<?= isset($item['options']['aderezos']) ? $item['options']['aderezos'] : '' ?>"
-                           placeholder="Unidades ej: 2 carne, 4 jyq"
+                           placeholder="Ej: 2 carne, 4 jyq, fritas"
+                           style="width: 185px; padding: 5px;">
+
+                    <?php elseif (strtolower(trim($categorias[$item['id']])) == 'empanadas'): ?>
+                       
+                        <input type="text" 
+                           name="cart[<?= $item['id'] ?>][options][aderezos]" 
+                           id="aderezos_<?= $item['id'] ?>" 
+                           value="<?= isset($item['options']['aderezos']) ? $item['options']['aderezos'] : '' ?>"
+                           placeholder="Ej: fritas u Horno"
                            style="width: 185px; padding: 5px;">
 
                     <?php else:?>

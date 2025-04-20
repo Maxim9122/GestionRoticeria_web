@@ -63,13 +63,17 @@ class Producto_controller extends Controller{
             
         ]);
         $ProductoModel = new Productos_model();
-        
+        $Model = new categoria_model();
+        $eliminado = 'NO';
+        $dato['categorias']= $Model->getProdBaja($eliminado);//trae la categoria del db
         if (!$input) {
-               $data['titulo']='Nuevo Producto'; 
-               echo view('navbar/navbar');
-               echo view('header/header',$data);
-                echo view('admin/nuevoProducto_view',['validation' => $this->validator]);
-                echo view('footer/footer');
+            $data['titulo'] = 'Nuevo Producto';
+            $dato['validation'] = $this->validator; // Agregamos el validador al array que ya contiene 'categorias'
+        
+            echo view('navbar/navbar');
+            echo view('header/header', $data);
+            echo view('admin/nuevoProducto_view', $dato);
+            echo view('footer/footer');
         } else {
 
         	$img = $this->request->getFile('imagen');

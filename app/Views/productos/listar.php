@@ -1,7 +1,11 @@
 <?php $session = session();
           $nombre= $session->get('nombre');
           $perfil=$session->get('perfil_id');
-          $id=$session->get('id');?>
+          $id=$session->get('id');
+          $estado = '';
+if ($session->has('estado')) {
+    $estado = $session->get('estado');
+}?>
           
 <!-- Mensajes temporales -->
 <?php if(session()->getFlashdata('mensaje_stock')): ?>
@@ -66,7 +70,7 @@ function cerrarMensaje() {
   <div class="">
   <h2 class="textoColor" align="center">Listado de Productos</h2>
   <br>
-
+<?php if($estado == ''){ ?>
   <section class="buscador">
   
   <form id="product_form" action="<?php echo base_url('Carrito_agrega'); ?>" method="post">
@@ -102,7 +106,7 @@ function cerrarMensaje() {
 </form>
 
     </section>
-  
+ <?php } ?> 
   <table class="" id="users-list">
    <thead>
       <tr class="colorTexto2">
@@ -149,7 +153,7 @@ function cerrarMensaje() {
          <td>
             <?php if($prod['stock'] <= 0){ ?>
                <button class="btn danger" disabled>Sin Stock</button>
-            <?php } else if ($session && ($perfil == 2 || $perfil == 1)) { ?>
+            <?php } else if ($session && ($perfil == 2 || $perfil == 1) && $estado == '') { ?>
                
                <!-- Formulario para agregar al carrito -->
                <?php echo form_open('Carrito_agrega', ['class' => 'form-carrito']); ?>
@@ -162,8 +166,8 @@ function cerrarMensaje() {
                <button type="submit" class="btn btn-agregar" data-id="<?php echo $prod['id']; ?>">Agregar</button>
                <?php echo form_close(); ?>
 
-            <?php } else { ?>
-               <input class="margen" id="btnAdvertencia" type="button" onclick="alert('¡Debe registrarse o Logearse para Comprar!')" value="Desea Comprar?" />
+            <?php } else {?>
+               <h4>Primero Termine de Cobrar el Pedido</h4>
             <?php } ?>
          </td>
          

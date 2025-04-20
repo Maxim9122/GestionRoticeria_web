@@ -23,6 +23,8 @@ $id = $session->get('id');
   }
 }
 
+
+
 </style>
 <?php if ($perfil == 1) { ?>
     <?php if (session()->getFlashdata('msg')): ?>
