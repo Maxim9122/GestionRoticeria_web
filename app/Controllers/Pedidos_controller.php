@@ -26,6 +26,23 @@ class Pedidos_controller extends Controller{
         return redirect()->to('pedidos');
     }
 
+    public function marcarComoCobrado()
+    {
+    $session = session();
+    if (!$session->has('id')) {
+        return redirect()->to(base_url('login'));
+    }
+
+    $idVenta = $this->request->getPost('id_venta');
+    if ($idVenta) {
+        $cabeceraModel = new Cabecera_model();
+        $cabeceraModel->update($idVenta, ['estado' => 'Cobrado']);
+    }
+
+    return redirect()->back()->with('mensaje', 'Venta marcada como Cobrada.');
+    }
+
+
      //Cargo la venta a Cobrar
      public function CargarVenta($id_vta)
      {
@@ -354,7 +371,7 @@ class Pedidos_controller extends Controller{
     // Guardar los datos en la sesión para no perderlos si el carrito queda vacío
     $session->set([
         'id_pedido' => $id_pedido,
-        'id_cliente_pedido' => $id_cliente,
+        'id_cliente' => $id_cliente,
         'nombre_cliente' => $nombre_cliente,        
         'fecha_pedido' => $fecha_pedido,
         'tipo_compra' => $tipo_compra,

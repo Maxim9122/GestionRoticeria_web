@@ -32,15 +32,17 @@ class Carrito_controller extends Controller{
     // Instanciar el modelo
     $USmodel = new Usuarios_model();
     $cabeceraModel = new Cabecera_model();
+    $Cliente_Model = new Clientes_model();
     
     // Llamar al método del modelo para obtener las ventas con clientes
     $datos['ventas'] = $cabeceraModel->getVentasConClientes();
     $datos2['usuarios'] = $USmodel->getUsBaja('NO');
+    $datos3['clientes'] = $Cliente_Model->getClientes();
     // Pasar el título y los datos a las vistas
     $data['titulo'] = 'Listado de Compras';
     echo view('navbar/navbar');
     echo view('header/header', $data);
-    echo view('comprasXcliente/ListaVentas_view', $datos + $datos2);
+    echo view('comprasXcliente/ListaVentas_view', $datos + $datos2 + $datos3);
     echo view('footer/footer');
 }
 
@@ -57,18 +59,22 @@ public function filtrarVentas()
     // Cargar modelos
     $cabeceraModel = new Cabecera_model();
     $usuariosModel = new Usuarios_model();
+    $Cliente_Model = new Clientes_model();
 
     // Obtener y limpiar filtros
     $filtros = [
         'fecha_hoy' => '',
         'fecha_desde' => trim($this->request->getVar('fecha_desde') ?? ''),
         'fecha_hasta' => trim($this->request->getVar('fecha_hasta') ?? ''),
+        'modo_compra' => trim($this->request->getVar('modo_compra') ?? ''),
         'estado' => trim($this->request->getVar('estado') ?? ''),
+        'id_cliente' => trim($this->request->getVar('id_cliente') ?? ''),
     ];
 
     // Obtener datos
     $datos['ventas'] = $cabeceraModel->getVentasConClientes($filtros);
     $datos['usuarios'] = $usuariosModel->getUsBaja('NO');
+    $datos['clientes'] = $Cliente_Model->getClientes();
 
     // Pasar filtros a la vista para mantener los valores seleccionados
     $datos['filtros'] = $filtros;
@@ -427,6 +433,12 @@ public function guarda_compra($id_pedido = null)
     $costo_envio = $this->request->getVar('costoEnvio') ?: 0;
 
     $nombre_cliente = $this->request->getVar('nombre_prov');
+    $id_cliente = $this->request->getPost('id_cliente');
+    
+    if(!$id_cliente){
+        $id_cliente = 1;
+    }
+   
     $total = $this->request->getPost('total_venta');
 
     date_default_timezone_set('America/Argentina/Buenos_Aires');
@@ -455,7 +467,7 @@ if ($session->get('estado') == 'Cobrando') {
         'fecha'        => $fecha,
         'hora'         => $hora,
         'fecha_pedido' => $fecha,
-        'id_cliente'   => 1,
+        'id_cliente'   => $id_cliente,
         'nombre_prov_client' => $nombre_cliente,
         'id_usuario'   => $id_usuario,
         'total_venta'  => $total,
@@ -490,7 +502,7 @@ if ($session->get('estado') == 'Cobrando') {
             'fecha'        => $fecha,
             'hora'         => $hora,
             'fecha_pedido' => $fecha,
-            'id_cliente'   => 1,
+            'id_cliente'   => $id_cliente,
             'nombre_prov_client' => $nombre_cliente,
             'id_usuario'   => $id_usuario,
             'total_venta'  => $total,
@@ -510,7 +522,7 @@ if ($session->get('estado') == 'Cobrando') {
             'hora'         => $hora,
             'fecha_pedido' => $fecha,
             'hora_entrega' => $hora,
-            'id_cliente'   => 1,
+            'id_cliente'   => $id_cliente,
             'nombre_prov_client' => $nombre_cliente,
             'id_usuario'   => $id_usuario,
             'total_venta'  => $total,
@@ -583,7 +595,7 @@ public function generarTicket($id_cabecera)
                 'detalle' => $detalle,
                 'producto' => $producto
             ];
-        } elseif (in_array(strtolower($categoria['descripcion']), ['pizzas', 'empanadas','empanadas_mixtas','milas_papas'])) {
+        } elseif (in_array(strtolower($categoria['descripcion']), ['pizzas', 'empanadas','empanadas_mixtas','milas_papas', 'tostados jyq'])) {
             $productosAgrupados['horno_otros'][] = [
                 'detalle' => $detalle,
                 'producto' => $producto
@@ -673,10 +685,10 @@ public function generarTicket($id_cabecera)
 
 
         <!-- Sección HORNO/OTROS -->
-        <?php if (!empty($productosAgrupados['pizzas_empanadas'])): ?>
+        <?php if (!empty($productosAgrupados['horno_otros'])): ?>
             <h1 style="margin-top:50px;">Pedido Nro: <?= $cabecera['id'] ?></h1>
             <h2>HORNO/OTROS</h2>
-            <?php foreach ($productosAgrupados['pizzas_empanadas'] as $item): ?>
+            <?php foreach ($productosAgrupados['horno_otros'] as $item): ?>
                 <p><?= $item['producto']['nombre'] ?> -> Cant:<?= $item['detalle']['cantidad'] ?></p>
                 <?php if (!empty($item['detalle']['aclaraciones'])): ?>
                     <p style="margin-left: 5px;">* <?= $item['detalle']['aclaraciones'] ?></p>
@@ -749,6 +761,176 @@ public function descargar_ticket()
     // Si no existe el archivo, muestra un error o redirige a otra página.
 }
 
+
+//Genera ticket venta normal
+public function generarTicketCliente($id_cabecera)
+{
+    // Cargar los modelos necesarios
+    $ventaModel = new \App\Models\Cabecera_model();
+    $detalleModel = new \App\Models\VentaDetalle_model();
+    $productoModel = new \App\Models\Productos_model();
+    $clienteModel = new \App\Models\Clientes_model();
+    
+    // Obtener los detalles de la venta
+    $cabecera = $ventaModel->find($id_cabecera);
+    
+    $detalles = $detalleModel->where('venta_id', $id_cabecera)->findAll();
+    //print_r($detalles);
+    //exit;
+    // Obtener los productos relacionados
+    $productos = [];
+    foreach ($detalles as $detalle) {
+        $productos[$detalle['producto_id']] = $productoModel->find($detalle['producto_id']);
+    }
+
+    // Obtener la información del cliente
+    $cliente = $clienteModel->find($cabecera['id_cliente']);
+
+    // Obtener el nombre del vendedor desde la sesión
+    $session = session();
+    $nombreVendedor = $session->get('nombre');
+    
+    // Crear el HTML para la vista previa
+    ob_start();
+    ?>
+    <html>
+    <head>
+        <style>
+            /* Estilos CSS para el ticket */
+            body {
+                font-family: Arial, sans-serif; /* Cambiar a una fuente más legible */
+                margin: 0;
+                padding: 0;
+                width: 220px; /* Ancho del ticket */
+            }
+            .ticket {
+                width: 100%;
+                font-size: 12px; /* Ajustar tamaño de fuente */
+            }
+            h1 {
+                font-size: 18px;
+                text-align: center;
+                margin: 3px 0;
+                font-weight: bold;
+            }
+            h3 {
+                text-align: center;
+                margin: 3px 0;
+                font-weight: bold;
+            }
+            .ticket p {
+                margin: 2px 0;
+                font-size: 10px;
+                font-weight: bold;
+                text-align: justify; /* Justificar el texto */
+            }
+            .ticket hr {
+                border: 0.5px solid #000;
+                margin: 5px 0;
+            }
+            .ticket .header,
+            .ticket .footer {
+                text-align: center;
+                font-size: 10px;
+            }
+            .ticket .details {
+                margin-top: 3px;
+                font-size: 10px;
+            }
+            .ticket .details td {
+                padding: 0px;
+            }
+            .ticket .details th {
+                text-align: left;
+                padding-right: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="ticket">
+            <h3>Remito</h3>
+            <p style="text-align: center;">no valido como factura</p>
+            <!-- Cabecera del ticket -->
+            <h1>SAN VICENTE HAMBURGUESERIA</h1>                       
+            <p>Domicilio: Calle Pedro Esnaola 5367, Corrientes (3400)</p>
+            <p>Cel: 3795-033970</p>            
+            <hr>
+            <!-- Información de la venta -->
+            <p>Fecha: <?= ($cabecera['tipo_compra'] == 'Pedido') ? date('d-m-Y H:i:s') : $cabecera['fecha'] . ' ' . $cabecera['hora']; ?></p>
+            <p>Numero de Ticket: <?= $cabecera['id'] ?></p>
+            <p>Cliente: <?= $cabecera['nombre_prov_client'] ?></p>
+            <p>Atendido por: <?= $nombreVendedor ?></p>
+            <hr>
+
+            <!-- Detalle de la compra -->
+            <div class="details" style="width: 100%; font-size: 10px;">
+                <h3>Detalle de la Compra</h3>
+                <?php foreach ($detalles as $detalle): ?>
+                    <div>
+                        <p><?= $productos[$detalle['producto_id']]['nombre'] ?> Cant:<?= $detalle['cantidad'] ?> x $<?= number_format($detalle['precio'], 2) ?></p>
+                        <?php if (!empty($detalle['aclaraciones'])): ?>
+                            <p style="margin-left: 5px;">* <?= $detalle['aclaraciones'] ?></p>
+                        <?php endif; ?>
+                        <hr>
+                    </div>
+                <?php endforeach; ?>            
+            </div>
+            <hr>        
+            <p>Total: $<?= number_format($cabecera['total_venta'], 2) ?></p>
+            <hr>
+            <h3>Gracias por elegirnos.!</h3>
+        </div>
+    </body>
+    </html>
+    <?php
+       
+    // Generar el PDF
+    $html = ob_get_clean();
+    $dompdf = new \Dompdf\Dompdf();
+    $dompdf->loadHtml($html);
+    $dompdf->render();
+    
+    // Guardar el archivo PDF en un archivo temporal
+    $output = $dompdf->output();
+    $tempFolder = 'path/to/temp/folder';  // Ruta de la carpeta temporal
+    $tempFile = $tempFolder . '/ticket.pdf';  // Ruta completa del archivo PDF
+    
+    // Crear la carpeta si no existe
+    if (!is_dir($tempFolder)) {
+        mkdir($tempFolder, 0777, true);  // Crea la carpeta con permisos 0777 (lectura, escritura y ejecución)
+    }
+    
+    // Guardar el archivo PDF en la carpeta temporal
+    file_put_contents($tempFile, $output);
+    
+     // Obtener el perfil del usuario desde la sesión
+    $perfil = session()->get('perfil_id');
+    
+    // Redirigir a una página de confirmación con JavaScript
+    echo "<script type='text/javascript'>
+            // Descargar el archivo PDF
+            window.location.href = '" . base_url('descargar_ticket') . "';
+            
+            // Pasar el valor de perfil desde PHP a JavaScript
+            var perfil = " . $perfil . "; // Asignar el perfil de PHP a la variable JS
+            
+            // Redirigir a la página deseada después de la descarga dependiendo del perfil usuario
+            window.setTimeout(function() {
+                if (perfil == 1) {
+                    window.location.href = '" . base_url('compras') . "'; // Redirigir al perfil 1
+                } else if (perfil == 2) {
+                    window.location.href = '" . base_url('catalogo') . "'; // Redirigir al perfil 2
+                } else {
+                    window.location.href = '" . base_url('home') . "'; // Redirigir por defecto si no es perfil 1 ni 2
+                }
+            }, 500);  // 0.5 segundo de espera para asegurar que la descarga termine
+          </script>";
+    exit;
+
+    // Forzar la descarga del PDF
+    //$dompdf->stream("ticket.pdf", array("Attachment" => true));
+   
+}
 
 //Verifica que todo este bien para Facturar
 public function verificarTA($id_cabecera = null) {

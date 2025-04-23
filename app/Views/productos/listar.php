@@ -70,7 +70,7 @@ function cerrarMensaje() {
   <div class="">
   <h2 class="textoColor" align="center">Listado de Productos</h2>
   <br>
-<?php if($estado == ''){ ?>
+<?php if($estado == '' || $estado == 'Modificando'){ ?>
   <section class="buscador">
   
   <form id="product_form" action="<?php echo base_url('Carrito_agrega'); ?>" method="post">
@@ -153,7 +153,7 @@ function cerrarMensaje() {
          <td>
             <?php if($prod['stock'] <= 0){ ?>
                <button class="btn danger" disabled>Sin Stock</button>
-            <?php } else if ($session && ($perfil == 2 || $perfil == 1) && $estado == '') { ?>
+            <?php } else if ($session && ($perfil == 2 || $perfil == 1) && $estado == '' || $estado == 'Modificando') { ?>
                
                <!-- Formulario para agregar al carrito -->
                <?php echo form_open('Carrito_agrega', ['class' => 'form-carrito']); ?>

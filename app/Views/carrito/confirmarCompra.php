@@ -27,6 +27,10 @@ if ($session->has('nombre_cli')) {
     $nombre_cliente = $session->get('nombre_cli');
 }
 
+if ($session->has('id_cliente')) {
+    $id_cliente = $session->get('id_cliente');
+}
+
 $id_pedido = '';
 if ($session->has('id_pedido')) {
     $id_pedido = $session->get('id_pedido');
@@ -72,12 +76,21 @@ endif;
                 <tr>
                     <td style="color:rgb(192, 250, 214);"><strong>Nombre del Cliente:</strong></td>
                     <td>
-                        <input class="selector" type="text" name="nombre_prov" id="nombreCliente" 
-                            placeholder="Ingrese nombre cliente" maxlength="20" required 
-                            value="<?= $nombre_cliente ?? '' ?>" list="clientesList" autocomplete="off">
-                        <datalist id="clientesList"></datalist>
+                        <?php if ($estado === 'Cobrando' || $estado === 'Modificando'): ?>
+                            <input type="text" class="selector" name="nombre_prov" value="<?= esc($nombre_cliente ?? '') ?>" readonly>
+                            <input type="hidden" name="id_cliente" value="<?= esc($id_cliente ?? '') ?>">
+                        <?php else: ?>
+                            <input class="selector" type="text" name="nombre_prov" id="nombreCliente" 
+                                placeholder="Ingrese nombre cliente" maxlength="30" required 
+                                value="<?= esc($nombre_cliente ?? '') ?>" list="clientesList" autocomplete="off">
+
+                            <input type="hidden" name="id_cliente" id="idClienteSeleccionado" value="<?= esc($id_cliente ?? '') ?>">
+
+                            <datalist id="clientesList"></datalist>
+                        <?php endif; ?>
                     </td>
-                </tr>                     
+                </tr>
+                     
                 <?php if($estado == 'Cobrando'){ ?>
                 <tr>
                     <td style="color: rgb(192, 250, 214);"><strong>Monto en Transferencia:</strong></td>
@@ -466,3 +479,28 @@ datalist option:hover {
     background-color: #44475a;
 }
 </style>
+
+<script>
+    // Cargar los clientes desde PHP
+    const clientes = <?= $clientes_json ?>;
+
+    // Rellenar el datalist
+    const datalist = document.getElementById('clientesList');
+    clientes.forEach(cliente => {
+        const option = document.createElement('option');
+        option.value = cliente.nombre;
+        option.dataset.id = cliente.id_cliente;
+        datalist.appendChild(option);
+    });
+
+    // Al seleccionar un nombre, guardar el id_cliente oculto
+    document.getElementById('nombreCliente').addEventListener('input', function () {
+        const inputVal = this.value;
+        const match = clientes.find(c => c.nombre === inputVal);
+        if (match) {
+            document.getElementById('idClienteSeleccionado').value = match.id_cliente;
+        } else {
+            document.getElementById('idClienteSeleccionado').value = ''; // Por si no coincide
+        }
+    });
+</script>

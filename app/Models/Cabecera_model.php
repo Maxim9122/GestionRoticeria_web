@@ -15,58 +15,69 @@ class Cabecera_model extends Model
       return $ventas;
     }
 
+
     public function getVentasConClientes($filtros = [])
-    {
-        // Conectarse a la base de datos
-        $db = db_connect();
-        
-        // Construir la consulta con el join
-        $builder = $db->table($this->table . ' u');
-        $builder->select("
-            u.id, 
-            u.nombre_prov_client AS nombre_cliente, 
-            v.nombre AS nombre_vendedor, 
-            u.estado, 
-            u.total_venta,
-            u.modo_compra,
+{
+    // Conectarse a la base de datos
+    $db = db_connect();
+    
+    // Construir la consulta con el join
+    $builder = $db->table($this->table . ' u');
+    $builder->select("
+        u.id, 
+        u.nombre_prov_client AS nombre_cliente, 
+        v.nombre AS nombre_vendedor, 
+        u.estado, 
+        u.total_venta,
+        u.modo_compra,
+        (CASE 
+            WHEN u.tipo_compra = 'Pedido' THEN u.fecha_pedido 
+            ELSE u.fecha 
+        END) AS fecha, 
+        u.hora AS hora, 
+        u.tipo_pago            
+    ");
+    $builder->join('cliente c', 'u.id_cliente = c.id_cliente');
+    $builder->join('usuarios v', 'u.id_usuario = v.id');
+    $builder->whereNotIn('u.estado', ['Cancelado', 'Pendiente']);
+
+    // Aplicar filtros opcionales
+    if (!empty($filtros['modo_compra'])) {
+        $builder->where('u.modo_compra', $filtros['modo_compra']);
+    }
+
+    if (!empty($filtros['estado'])) {
+        $builder->where('u.estado', $filtros['estado']);
+    }
+
+    if (!empty($filtros['fecha_desde'])) {
+        $fechaDesde = date('Y-m-d', strtotime($filtros['fecha_desde']));
+        $builder->where("STR_TO_DATE(
             (CASE 
                 WHEN u.tipo_compra = 'Pedido' THEN u.fecha_pedido 
                 ELSE u.fecha 
-            END) AS fecha, 
-            u.hora AS hora, 
-            u.tipo_pago            
-        ");
-        $builder->join('cliente c', 'u.id_cliente = c.id_cliente');
-        $builder->join('usuarios v', 'u.id_usuario = v.id');
-        $builder->whereNotIn('u.estado', ['Cancelado', 'Pendiente']);
-    
-        // Aplicar filtros opcionales
-        if (!empty($filtros['estado'])) {
-            $builder->where('u.estado', $filtros['estado']);
-        }
-    
-        if (!empty($filtros['fecha_desde'])) {
-            $fechaDesde = date('Y-m-d', strtotime($filtros['fecha_desde']));
-            $builder->where("STR_TO_DATE(
-                (CASE 
-                    WHEN u.tipo_compra = 'Pedido' THEN u.fecha_pedido 
-                    ELSE u.fecha 
-                END), '%d-%m-%Y') >= ", $fechaDesde);
-        }
-    
-        if (!empty($filtros['fecha_hasta'])) {
-            $fechaHasta = date('Y-m-d', strtotime($filtros['fecha_hasta']));
-            $builder->where("STR_TO_DATE(
-                (CASE 
-                    WHEN u.tipo_compra = 'Pedido' THEN u.fecha_pedido 
-                    ELSE u.fecha 
-                END), '%d-%m-%Y') <= ", $fechaHasta);
-        }
-    
-        // Ejecutar la consulta y retornar el resultado como array
-        $ventas = $builder->get();
-        return $ventas->getResultArray();
+            END), '%d-%m-%Y') >= ", $fechaDesde);
     }
+
+    if (!empty($filtros['fecha_hasta'])) {
+        $fechaHasta = date('Y-m-d', strtotime($filtros['fecha_hasta']));
+        $builder->where("STR_TO_DATE(
+            (CASE 
+                WHEN u.tipo_compra = 'Pedido' THEN u.fecha_pedido 
+                ELSE u.fecha 
+            END), '%d-%m-%Y') <= ", $fechaHasta);
+    }
+
+    // 💡 Agregamos el filtro por cliente
+    if (!empty($filtros['id_cliente'])) {
+        $builder->where('u.id_cliente', $filtros['id_cliente']);
+    }
+
+    // Ejecutar la consulta y retornar el resultado como array
+    $ventas = $builder->get();
+    return $ventas->getResultArray();
+}
+
     
 
     public function getVentasPorClienteYFecha($idCliente, $fechaHoy)

@@ -15,7 +15,7 @@
 <section class="Fondo">
 <div class="" style="width: 100%;" align="center">
 <section class="contenedor-titulo">
-  <strong class="titulo-vidrio">Ventas Normales y Pedidos (Facturada o No)</strong>
+  <strong class="titulo-vidrio">Registro de Ventas</strong>
   </section>
 <!-- Variable para la recaudacion -->
 <?php $TotalRecaudado = 0;?>
@@ -28,22 +28,39 @@
         <label for="fecha_hasta" style="color:#ffff;">Hasta:</label>
         <input type="date" name="fecha_hasta" id="fecha_hasta" value="<?= esc($filtros['fecha_hasta'] ?? '') ?>">
 
+        <label for="estado" style="color:#ffff;">Modo Compra:</label>
+        <select name="modo_compra" id="estado">
+            <option value="">Todos</option>
+            <option value="Fiado" <?= ($filtros['modo_compra'] ?? '') == 'Fiado' ? 'selected' : '' ?>>Fiado</option>
+            <option value="Compra" <?= ($filtros['modo_compra'] ?? '') == 'Compra' ? 'selected' : '' ?>>Compra</option>
+        </select>
+
         <label for="estado" style="color:#ffff;">Estado:</label>
         <select name="estado" id="estado">
             <option value="">Todos</option>
-            <option value="Facturada" <?= ($filtros['estado'] ?? '') == 'Facturada' ? 'selected' : '' ?>>Facturada</option>
-            <option value="Sin_Facturar" <?= ($filtros['estado'] ?? '') == 'Sin_Facturar' ? 'selected' : '' ?>>Sin_Facturar</option>
-            <option value="Error_factura" <?= ($filtros['estado'] ?? '') == 'Error_factura' ? 'selected' : '' ?>>Error_factura</option>
+            <option value="Entregado" <?= ($filtros['estado'] ?? '') == 'Entregado' ? 'selected' : '' ?>>Entregado</option>
+            <option value="Cobrado" <?= ($filtros['estado'] ?? '') == 'Cobrado' ? 'selected' : '' ?>>Cobrado</option>
+        </select>
+        <br><br>
+        <label for="id_cliente" style="color:#ffff;">Cliente:</label>
+        <select name="id_cliente" id="cliente_id">
+            <option value="">Todos</option>
+            <?php foreach ($clientes as $cliente): ?>
+                <option value="<?= $cliente['id_cliente'] ?>" <?= (isset($filtros['id_cliente']) && $filtros['id_cliente'] == $cliente['id_cliente']) ? 'selected' : '' ?>>
+                    <?= esc($cliente['nombre']) ?>
+                </option>
+            <?php endforeach; ?>
         </select>
 
           <button type="submit" class="btn">Filtrar</button>
-       </form>
-        <a class="button" href="<?php echo base_url('compras');?>">
+          <a class="button" href="<?php echo base_url('compras');?>">
                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-checklist" viewBox="0 0 16 16">
                 <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
                 <path d="M7 5.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0zM7 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0z"/>
-        </svg>TODAS</a>
-        </div>
+        </svg> VENTAS TODAS</a>
+       </form>
+       
+    </div>
 
 
 
@@ -60,7 +77,7 @@
              <th>Nro Pedido</th>
              <th>Cliente</th>
              <th>Vendedor</th> 
-             <th>Tipo de Pedido</th>           
+             <th>Modo Compra</th>           
              <th>ESTADO</th>
              <th>Total Venta</th>
              <th>Fecha</th>
@@ -98,16 +115,20 @@
                     <a class="btnDesplegable" style="color:#ffff; background:#3c3d3c; border-radius:10px; padding:8px;" href="<?php echo base_url('generarTicketFacturaC/'.$vta['id']); ?>">
                         Imp.Factura
                     </a>
-                <?php  } if($vta['estado'] == 'Sin_Facturar'){  ?>
-                    <a class="btnDesplegable" style="color:#ffff; background:#3c3d3c; border-radius:10px;  padding:8px;" href="<?php echo base_url('generarTicket/'.$vta['id']); ?>">
+                <?php  } if($vta['estado'] == 'Cobrado' || $vta['estado'] == 'Entregado'){  ?>
+                    <a class="btnDesplegable" style="color:#ffff; background:#3c3d3c; border-radius:10px;  padding:8px;" href="<?php echo base_url('generarTicketCliente/'.$vta['id']); ?>">
                         Imp.Ticket
                     </a>
-                <?php } if($vta['estado'] == 'Error_factura') { ?>
-                    <a class="btnDesplegable" style="color:#ffff; background:#3c3d3c; border-radius:10px; padding:8px;" href="<?php echo base_url('verificarTA/'.$vta['id']); ?>">
-                        Re.Facturar
-                    </a>
+                <?php } if ($vta['estado'] == 'Entregado') {  ?>
+                    
+                    <form action="<?= base_url('ventas/marcarComoCobrado') ?>" method="post" onsubmit="return confirm('¿Marcar como Cobrado?');">
+                        <input type="hidden" name="id_venta" value="<?= $vta['id'] ?>">
+                        <button type="submit" class="btn btnDesplegable" style="color:#ffff; background:#3c3d3c; border-radius:10px; padding:8px; max-width:10px; margin-top:10px;">Cobrado</button>
+                    </form>
+                    
                 <?php } ?> 
-                 </li>                                  
+
+            </li>                                  
                     </ul>
                 </div>
 
@@ -121,7 +142,7 @@
        
      </table>
      <!-- Recaudacion de Ventas (Todas o por filtro)-->
-     <h2 class="estiloTurno textColor">Total Recaudado: $ <?php echo $TotalRecaudado ?> (Excluyendo las que dieron Error al Facturar)</h2>
+     <h2 class="estiloTurno textColor">Total Recaudado: $ <?php echo $TotalRecaudado ?> (No se suman las Canceladas)</h2>
      <br>
   </div>
 </div>

@@ -230,13 +230,37 @@
             <h5 class="colorTexto2"><?php echo "Bienvenido ".$nombre?></h5>
           </li>
           <li class="nnavItem">
+            <a class="btn signUp" href="<?php echo base_url('compras');?>">VENTAS</a>
+          </li>
+          <li class="nnavItem">
             <a class="btn signUp" href="<?php echo base_url('clientes');?>">CLIENTES</a>
           </li>
           <li class="nnavItem">
             <a href="<?= base_url('/catalogo')?>" class="btn">Productos</a>
           </li>
-          <li class="navItem">
-          <a href="<?php echo base_url('CarritoList') ?>"> <img class="navImg"  src=" <?php echo base_url('assets/img/icons/iconMB2.png')?>"> </a>
+          </li>
+          <li class="navItem cart-container">
+              <a href="<?= base_url('CarritoList') ?>">
+                  <img class="navImg" src="<?= base_url('assets/img/icons/carrito2.png') ?>">
+              </a>
+              <div class="cart-dropdown">
+                  <?php 
+                  $cart = \Config\Services::cart();
+                  $items = $cart->contents(); // Obtiene los items del carrito
+                  ?>
+                  
+                  <?php if (empty($items)): ?>
+                      <p>El carrito está vacío</p>
+                  <?php else: ?>
+                      <?php foreach ($items as $item): ?>
+                          <div class="cart-item">
+                              <span class="item-name"><?= esc($item['name']) ?></span>
+                              <span class="item-quantity"><?= esc($item['qty']) ?></span>
+                          </div>
+                          <hr>
+                      <?php endforeach; ?>
+                  <?php endif; ?>
+              </div>
           </li>
           <li class="nnavItem">
             <a class="btn" href="<?php echo base_url('pedidos');?>">Pedidos</a>

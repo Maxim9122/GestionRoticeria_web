@@ -39,6 +39,8 @@ $routes->get('cancelarCobro/(:num)', 'Pedidos_controller::CancelarCobro/$1');
 $routes->get('buscar_clientes', 'Pedidos_controller::buscar_clientes');
 
 $routes->post('entregarFiado', 'Pedidos_controller::entregarFiado');
+$routes->post('ventas/marcarComoCobrado', 'Pedidos_controller::marcarComoCobrado');
+
 
 //Todo sobre Pedidos
 $routes->get('/pedidosCompletados', 'Pedidos_controller::PedidosCompletados');
@@ -172,7 +174,7 @@ $routes->get('verificarTA','Carrito_controller::verificarTA');
 $routes->get('generarTicket', 'Carrito_controller::facturar');
 
 $routes->get('verificarTA/(:num)','Carrito_controller::verificarTA/$1');
-$routes->get('generarTicket/(:num)', 'Carrito_controller::generarTicket/$1');
+$routes->get('generarTicketCliente/(:num)', 'Carrito_controller::generarTicketCliente/$1');
 $routes->get('generarTicketFacturaC/(:num)', 'Carrito_controller::generarTicketFacturaC/$1');
 
 
