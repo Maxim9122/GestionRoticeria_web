@@ -9,6 +9,7 @@ use App\Models\Usuarios_model;
 use App\Models\Clientes_model;
 use App\Models\Servicios_model;
 use App\Models\categoria_model;
+use App\Models\Propinas_model;
 //use Dompdf\Dompdf;
 
 class Pedidos_controller extends Controller{
@@ -16,6 +17,57 @@ class Pedidos_controller extends Controller{
 	public function __construct(){
            helper(['form', 'url']);
 	}
+
+public function RegisPropina(){
+
+    $propinasModel = new Propinas_model();
+    $monto = $this->request->getVar('monto');
+
+    // Obtener fecha y hora actuales
+    date_default_timezone_set('America/Argentina/Buenos_Aires');
+    $fecha = date('d-m-Y');
+    $hora = date('H:i');
+
+    // Guardar en la base de datos
+    $propinasModel->save([
+        'monto' => $monto,
+        'fecha' => $fecha,
+        'hora' => $hora
+    ]);
+
+    session()->setFlashdata('msg', 'Propina Registrada!');
+    return redirect()->to('propinas');
+}
+
+
+    public function Propinas(){
+        $session = session();
+            // Verifica si el usuario está logueado
+            if (!$session->has('id')) { 
+                return redirect()->to(base_url('login')); // Redirige al login si no hay sesión
+            }
+        $propinasModel = new Propinas_model();
+        $filtros = [
+            'estado' => '',
+            'fecha_hoy' => '',       
+            'fecha_desde' => trim($this->request->getVar('fecha_desde') ?? ''),
+            'hora_desde' => trim($this->request->getVar('hora_desde') ?? ''),
+            'fecha_hasta' => trim($this->request->getVar('fecha_hasta') ?? ''),
+            'hora_hasta' => trim($this->request->getVar('hora_hasta') ?? '')       
+        ];
+    
+        $datos['ventas'] = $propinasModel->obtenerPropinas($filtros);
+        //Creo un objeto del tipo modelo y en la misma linea ejecuto una funcion de ese modelo.       
+        
+        $datos['filtros'] = $filtros;
+    
+        $data['titulo'] = 'Listado de Pedidos Filtrados';
+        echo view('navbar/navbar');
+        echo view('header/header', $data);
+        echo view('pedidos/propinas_view', $datos);
+        echo view('footer/footer');
+    }
+
 //Cuenta por rango de fechas la cantidad de comida vendida
 public function conteoComida(){
     $session = session();

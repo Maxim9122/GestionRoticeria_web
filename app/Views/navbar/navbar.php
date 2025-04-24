@@ -226,8 +226,8 @@
   
   
           </li>
-          <li class="navItem">
-            <h5 class="colorTexto2"><?php echo "Bienvenido ".$nombre?></h5>
+          <li class="nnavItem">
+          <a class="btn signUp" href="<?php echo base_url('propinas');?>">Propinas</a>
           </li>
           <li class="nnavItem">
             <a class="btn signUp" href="<?php echo base_url('compras');?>">VENTAS</a>

@@ -624,20 +624,20 @@ public function generarTicket($id_cabecera)
     ?>
     <html>
     <head>
-        <style>
+    <style>
             /* Estilos CSS para el ticket */
             body {
                 font-family: Arial, sans-serif; /* Cambiar a una fuente más legible */
-                margin-top: 20px;
+                margin: 0;
                 padding: 0;
-                width: 220px; /* Ancho del ticket */
+                width: 145px; /* Ancho del ticket */
             }
             .ticket {
                 width: 100%;
                 font-size: 12px; /* Ajustar tamaño de fuente */
             }
             h1 {
-                font-size: 18px;
+                font-size: 15px;
                 text-align: center;
                 margin: 3px 0;
                 font-weight: bold;
@@ -649,7 +649,7 @@ public function generarTicket($id_cabecera)
             }
             .ticket p {
                 margin: 2px 0;
-                font-size: 14px;
+                font-size: 10px;
                 font-weight: bold;
                 text-align: justify; /* Justificar el texto */
             }
@@ -709,8 +709,9 @@ public function generarTicket($id_cabecera)
         </div>
     </body>
     </html>
+
     <?php
-       
+
     // Generar el PDF
     $html = ob_get_clean();
     $dompdf = new \Dompdf\Dompdf();
@@ -754,8 +755,6 @@ public function generarTicket($id_cabecera)
           </script>";
     exit;
 
-    // Forzar la descarga del PDF
-    //$dompdf->stream("ticket.pdf", array("Attachment" => true));
    
 }
 
@@ -809,14 +808,14 @@ public function generarTicketCliente($id_cabecera)
                 font-family: Arial, sans-serif; /* Cambiar a una fuente más legible */
                 margin: 0;
                 padding: 0;
-                width: 220px; /* Ancho del ticket */
+                width: 150px; /* Ancho del ticket */
             }
             .ticket {
                 width: 100%;
                 font-size: 12px; /* Ajustar tamaño de fuente */
             }
             h1 {
-                font-size: 18px;
+                font-size: 15px;
                 text-align: center;
                 margin: 3px 0;
                 font-weight: bold;
@@ -886,7 +885,7 @@ public function generarTicketCliente($id_cabecera)
             <hr>        
             <p>Total: $<?= number_format($cabecera['total_venta'], 2) ?></p>
             <hr>
-            <h3>Gracias por elegirnos.!</h3>
+            <h3>Gracias por Elegirnos.!</h3>
         </div>
     </body>
     </html>
@@ -935,8 +934,7 @@ public function generarTicketCliente($id_cabecera)
           </script>";
     exit;
 
-    // Forzar la descarga del PDF
-    //$dompdf->stream("ticket.pdf", array("Attachment" => true));
+    
    
 }
 

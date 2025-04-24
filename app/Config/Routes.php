@@ -32,6 +32,11 @@ $routes->setAutoRoute(true);
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
 $routes->get('/', 'Login_controller');
+//Propinas
+$routes->get('propinas', 'Pedidos_controller::Propinas');
+$routes->get('filtrarPropinas', 'Pedidos_controller::Propinas');
+$routes->post('propinasRegistro', 'Pedidos_controller::RegisPropina');
+
 //Conteo de comida
 $routes->get('conteoComida', 'Pedidos_controller::conteoComida');
 $routes->get('filtrarVentasComida', 'Pedidos_controller::conteoComida');
