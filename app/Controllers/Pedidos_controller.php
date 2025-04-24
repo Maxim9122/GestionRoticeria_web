@@ -8,6 +8,7 @@ use App\Models\Pedidos_model;
 use App\Models\Usuarios_model;
 use App\Models\Clientes_model;
 use App\Models\Servicios_model;
+use App\Models\categoria_model;
 //use Dompdf\Dompdf;
 
 class Pedidos_controller extends Controller{
@@ -15,6 +16,35 @@ class Pedidos_controller extends Controller{
 	public function __construct(){
            helper(['form', 'url']);
 	}
+//Cuenta por rango de fechas la cantidad de comida vendida
+public function conteoComida(){
+    $session = session();
+        // Verifica si el usuario está logueado
+        if (!$session->has('id')) { 
+            return redirect()->to(base_url('login')); // Redirige al login si no hay sesión
+        }
+    $cabeceraModel = new Cabecera_model();
+    $filtros = [
+        'estado' => '',
+        'fecha_hoy' => '',       
+        'fecha_desde' => $this->request->getVar('fecha_desde'),
+        'fecha_hasta' => $this->request->getVar('fecha_hasta'),
+        'categoria_id' => $this->request->getVar('categoria_id'),
+    ];
+
+    $datos['ventas'] = $cabeceraModel->obtenerComidas($filtros);
+    //Creo un objeto del tipo modelo y en la misma linea ejecuto una funcion de ese modelo.
+    $datos2['usuarios'] = (new Usuarios_model())->getUsBaja('NO');
+    $datos3['categorias'] = (new categoria_model())->getCategoria();
+    $datos['filtros'] = $filtros;
+
+    $data['titulo'] = 'Listado de Pedidos Filtrados';
+    echo view('navbar/navbar');
+    echo view('header/header', $data);
+    echo view('pedidos/conteo_comida', $datos + $datos2 + $datos3);
+    echo view('footer/footer');
+}
+
 
     public function entregarFiado(){
         $cabecera_model = new Cabecera_model();
@@ -53,10 +83,7 @@ class Pedidos_controller extends Controller{
              // Verifica si el usuario está logueado
              if (!$session->has('id')) { 
                  return redirect()->to(base_url('login')); // Redirige al login si no hay sesión
-             }
-             if($perfil == 2){
-                 return redirect()->to(base_url('catalogo'));
-             }
+             }            
         
          $cabecera_model = new Cabecera_model(); 
          $US_model = new Usuarios_model();

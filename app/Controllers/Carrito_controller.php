@@ -65,7 +65,9 @@ public function filtrarVentas()
     $filtros = [
         'fecha_hoy' => '',
         'fecha_desde' => trim($this->request->getVar('fecha_desde') ?? ''),
+        'hora_desde' => trim($this->request->getVar('hora_desde') ?? ''),
         'fecha_hasta' => trim($this->request->getVar('fecha_hasta') ?? ''),
+        'hora_hasta' => trim($this->request->getVar('hora_hasta') ?? ''),
         'modo_compra' => trim($this->request->getVar('modo_compra') ?? ''),
         'estado' => trim($this->request->getVar('estado') ?? ''),
         'id_cliente' => trim($this->request->getVar('id_cliente') ?? ''),
@@ -432,7 +434,13 @@ public function guarda_compra($id_pedido = null)
 
     $costo_envio = $this->request->getVar('costoEnvio') ?: 0;
 
-    $nombre_cliente = $this->request->getVar('nombre_prov');
+    $nombre_cliente = trim($this->request->getVar('nombre_prov'));
+
+    if ($nombre_cliente === '') {
+        session()->setFlashdata('msg', 'Ingrese el nombre del cliente.!');
+        return redirect()->to('casiListo');
+    }
+
     $id_cliente = $this->request->getPost('id_cliente');
     
     if(!$id_cliente){

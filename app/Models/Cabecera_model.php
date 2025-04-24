@@ -16,6 +16,69 @@ class Cabecera_model extends Model
     }
 
 
+    public function obtenerComidas($filtros = [])
+    {
+        $db = db_connect();
+
+    $builder = $db->table('ventas_detalle vd');
+    $builder->select("
+    p.categoria_id,
+    cat.descripcion AS nombre_categoria,
+    SUM(
+        vd.cantidad * 
+        CASE 
+            WHEN p.nombre LIKE '%x12u%' THEN 12
+            WHEN p.nombre LIKE '%x6u%' THEN 6
+            WHEN p.nombre LIKE '%x1u%' THEN 1
+            ELSE 1
+        END
+    ) AS total_vendidos
+    ");
+
+
+    // Join con cabecera para la fecha y otros datos
+    $builder->join('ventas_cabecera vc', 'vd.venta_id = vc.id');
+    // Join con productos para acceder a la categoría
+    $builder->join('productos p', 'vd.producto_id = p.id');
+    // Join con categorías para obtener el nombre
+    $builder->join('categorias cat', 'p.categoria_id = cat.categoria_id');
+
+    // Excluir estados no deseados
+    $builder->whereNotIn('vc.estado', ['Cancelado', 'Pendiente']);
+
+    // Filtro por categoría específica si se indica
+    if (!empty($filtros['categoria_id'])) {
+        $builder->where('p.categoria_id', $filtros['categoria_id']);
+    }
+
+    // Filtro por fecha desde
+    if (!empty($filtros['fecha_desde'])) {
+        $fechaDesde = date('Y-m-d', strtotime($filtros['fecha_desde']));
+        $builder->where("STR_TO_DATE(
+            (CASE 
+                WHEN vc.tipo_compra = 'Pedido' THEN vc.fecha_pedido 
+                ELSE vc.fecha 
+            END), '%d-%m-%Y') >=", $fechaDesde);
+    }
+
+    // Filtro por fecha hasta
+    if (!empty($filtros['fecha_hasta'])) {
+        $fechaHasta = date('Y-m-d', strtotime($filtros['fecha_hasta']));
+        $builder->where("STR_TO_DATE(
+            (CASE 
+                WHEN vc.tipo_compra = 'Pedido' THEN vc.fecha_pedido 
+                ELSE vc.fecha 
+            END), '%d-%m-%Y') <=", $fechaHasta);
+    }
+
+    // Agrupar por categoría
+    $builder->groupBy('p.categoria_id, cat.descripcion');
+
+    $query = $builder->get();
+    return $query->getResultArray();
+    }
+    
+
     public function getVentasConClientes($filtros = [])
 {
     // Conectarse a la base de datos
@@ -39,7 +102,7 @@ class Cabecera_model extends Model
     ");
     $builder->join('cliente c', 'u.id_cliente = c.id_cliente');
     $builder->join('usuarios v', 'u.id_usuario = v.id');
-    $builder->whereNotIn('u.estado', ['Cancelado', 'Pendiente']);
+    $builder->whereNotIn('u.estado', ['Pendiente']);
 
     // Aplicar filtros opcionales
     if (!empty($filtros['modo_compra'])) {
@@ -52,21 +115,30 @@ class Cabecera_model extends Model
 
     if (!empty($filtros['fecha_desde'])) {
         $fechaDesde = date('Y-m-d', strtotime($filtros['fecha_desde']));
-        $builder->where("STR_TO_DATE(
-            (CASE 
-                WHEN u.tipo_compra = 'Pedido' THEN u.fecha_pedido 
-                ELSE u.fecha 
-            END), '%d-%m-%Y') >= ", $fechaDesde);
+        $horaDesde = !empty($filtros['hora_desde']) ? $filtros['hora_desde'] : '00:00';
+        $desdeCompleto = $fechaDesde . ' ' . $horaDesde . ':00';
+    
+        $builder->where("
+            STR_TO_DATE(CONCAT(
+                CASE 
+                    WHEN u.tipo_compra = 'Pedido' THEN u.fecha_pedido 
+                    ELSE u.fecha 
+                END, ' ', u.hora_entrega), '%d-%m-%Y %H:%i') >= ", $desdeCompleto);
     }
-
+    
     if (!empty($filtros['fecha_hasta'])) {
         $fechaHasta = date('Y-m-d', strtotime($filtros['fecha_hasta']));
-        $builder->where("STR_TO_DATE(
-            (CASE 
-                WHEN u.tipo_compra = 'Pedido' THEN u.fecha_pedido 
-                ELSE u.fecha 
-            END), '%d-%m-%Y') <= ", $fechaHasta);
+        $horaHasta = !empty($filtros['hora_hasta']) ? $filtros['hora_hasta'] : '23:59';
+        $hastaCompleto = $fechaHasta . ' ' . $horaHasta . ':59';
+    
+        $builder->where("
+            STR_TO_DATE(CONCAT(
+                CASE 
+                    WHEN u.tipo_compra = 'Pedido' THEN u.fecha_pedido 
+                    ELSE u.fecha 
+                END, ' ', u.hora_entrega), '%d-%m-%Y %H:%i') <= ", $hastaCompleto);
     }
+        
 
     // 💡 Agregamos el filtro por cliente
     if (!empty($filtros['id_cliente'])) {

@@ -15,51 +15,37 @@
 <section class="Fondo">
 <div class="" style="width: 100%;" align="center">
 <section class="contenedor-titulo">
-  <strong class="titulo-vidrio">Registro de Ventas</strong>
+  <strong class="titulo-vidrio">Registro de Ventas por Comida</strong>
   </section>
 <!-- Variable para la recaudacion -->
 <?php $TotalRecaudado = 0;?>
 
   <div class="estiloTurno" style="width: 70%;">
-      <form method="GET" action="<?= base_url('Carrito_controller/filtrarVentas') ?>">
+      <form method="GET" action="<?= base_url('filtrarVentasComida') ?>">
         <label for="fecha_desde" style="color:#ffff;">Desde:</label>
         <input type="date" name="fecha_desde" id="fecha_desde" value="<?= esc($filtros['fecha_desde'] ?? '') ?>">
-        <input type="time" name="hora_desde" id="hora_desde" value="<?= esc($filtros['hora_desde'] ?? '') ?>">
 
         <label for="fecha_hasta" style="color:#ffff;">Hasta:</label>
         <input type="date" name="fecha_hasta" id="fecha_hasta" value="<?= esc($filtros['fecha_hasta'] ?? '') ?>">
-        <input type="time" name="hora_hasta" id="hora_hasta" value="<?= esc($filtros['hora_hasta'] ?? '') ?>">
-        <br>
-        <label for="estado" style="color:#ffff;">Modo Compra:</label>
-        <select name="modo_compra" id="estado">
+
+        <label for="id_cliente" style="color:#ffff;">Categoria:</label>
+        <select name="categoria_id" id="cliente_id">
             <option value="">Todos</option>
-            <option value="Fiado" <?= ($filtros['modo_compra'] ?? '') == 'Fiado' ? 'selected' : '' ?>>Fiado</option>
-            <option value="Compra" <?= ($filtros['modo_compra'] ?? '') == 'Compra' ? 'selected' : '' ?>>Compra</option>
-        </select>
-        <br>
-        <label for="estado" style="color:#ffff;">Estado:</label>
-        <select name="estado" id="estado">
-            <option value="">Todos</option>
-            <option value="Entregado" <?= ($filtros['estado'] ?? '') == 'Entregado' ? 'selected' : '' ?>>Entregado</option>
-            <option value="Cobrado" <?= ($filtros['estado'] ?? '') == 'Cobrado' ? 'selected' : '' ?>>Cobrado</option>
-        </select>
-        <br><br>
-        <label for="id_cliente" style="color:#ffff;">Cliente:</label>
-        <select name="id_cliente" id="cliente_id">
-            <option value="">Todos</option>
-            <?php foreach ($clientes as $cliente): ?>
-                <option value="<?= $cliente['id_cliente'] ?>" <?= (isset($filtros['id_cliente']) && $filtros['id_cliente'] == $cliente['id_cliente']) ? 'selected' : '' ?>>
-                    <?= esc($cliente['nombre']) ?>
+            <?php foreach ($categorias as $categoria): ?>
+                <option value="<?= $categoria['categoria_id'] ?>" <?= (isset($filtros['categoria_id']) && $filtros['categoria_id'] == $categoria['categoria_id']) ? 'selected' : '' ?>>
+                    <?= esc($categoria['descripcion']) ?>
                 </option>
             <?php endforeach; ?>
         </select>
+        
 
           <button type="submit" class="btn">Filtrar</button>
-          <a class="button" href="<?php echo base_url('compras');?>">
+          
+          <a class="button" href="<?php echo base_url('conteoComida');?>">
                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-checklist" viewBox="0 0 16 16">
                 <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
                 <path d="M7 5.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0zM7 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0z"/>
-        </svg> VENTAS TODAS</a>
+        </svg> VER TODO</a>
        </form>
        
     </div>
@@ -69,11 +55,11 @@
 
 
   <div style="text-align: end;">
-    <section><a class="btn" href="<?php echo base_url('conteoComida');?>">
+    <section><a class="button" href="<?php echo base_url('compras');?>">
                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-checklist" viewBox="0 0 16 16">
                 <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
                 <path d="M7 5.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0zM7 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0z"/>
-        </svg> VENTA POR COMIDA</a></section>
+        </svg> Volver a VENTAS</a></section>
 <!-- Recaudacion de Ventas (Todas o por filtro)-->
   
   <br><br>
@@ -81,15 +67,9 @@
   <table class="table table-responsive table-hover" id="users-list">
        <thead>
           <tr class="colorTexto2">
-             <th>Nro Pedido</th>
-             <th>Cliente</th>
-             <th>Vendedor</th> 
-             <th>Modo Compra</th>           
-             <th>ESTADO</th>
-             <th>Total Venta</th>
-             <th>Fecha</th>
-             <th>Hora</th>
-             <th>Tipo Pago</th>
+             <th>Nro Categoria</th>
+             <th>Nombre</th>
+             <th>Cantidad Vendida</th>             
              <th>Acciones</th>
           </tr>
        </thead>
@@ -97,64 +77,24 @@
           <?php if($ventas): ?>
           <?php foreach($ventas as $vta): ?>
           <tr>
-             <td><?php echo $vta['id']; ?></td>
-             <td><?php echo $vta['nombre_cliente']; ?></td>
-             <td><?php echo $vta['nombre_vendedor']; ?></td> 
-             <td><?php echo $vta['modo_compra']; ?></td>           
-             <td><?php echo $vta['estado']; ?></td>
-             <td>$<?php echo $vta['total_venta']; ?></td>
-             <td><?php echo $vta['fecha'];?></td>
-             <td><?php echo $vta['hora']; ?></td>
-             <td><?php echo $vta['tipo_pago']; ?></td>
+             <td><?php echo $vta['categoria_id']; ?></td>
+             <td><?php echo $vta['nombre_categoria']; ?></td>
+             <td><?php echo $vta['total_vendidos']; ?></td>              
              
              <td class="row">               
 
-             <div class="dropdown">
-              <span class="dropdown-toggle btn">Acciones▼</span>
-               <ul class="dropdown-menu">
-               <li>
-                <a class="btnDesplegable" style="color:#ffff; background:#3c3d3c; border-radius:10px;" href="<?php echo base_url('DetalleVta/'.$vta['id']);?>">
-                    Ver Detalle
-                </a>
-            </li>
-            <li>
-                <?php if($vta['estado'] == 'Facturada'){?>
-                    <a class="btnDesplegable" style="color:#ffff; background:#3c3d3c; border-radius:10px; padding:8px;" href="<?php echo base_url('generarTicketFacturaC/'.$vta['id']); ?>">
-                        Imp.Factura
-                    </a>
-                <?php  } if($vta['estado'] == 'Cobrado' || $vta['estado'] == 'Entregado'){  ?>
-                    <a class="btnDesplegable" style="color:#ffff; background:#3c3d3c; border-radius:10px;  padding:8px;" href="<?php echo base_url('generarTicketCliente/'.$vta['id']); ?>">
-                        Imp.Ticket
-                    </a>
-                <?php } if ($vta['estado'] == 'Entregado') {  ?>
-                    
-                    <form action="<?= base_url('ventas/marcarComoCobrado') ?>" method="post" onsubmit="return confirm('¿Marcar como Cobrado?');">
-                        <input type="hidden" name="id_venta" value="<?= $vta['id'] ?>">
-                        <button type="submit" class="btn btnDesplegable" 
-                            style="color:#fff; background:#3c3d3c; border-radius:10px; padding:8px; width:30px; height:30px; margin-top:10px;">
-                            Cobrar
-                        </button>
-
-                    </form>
-                    
-                <?php } ?> 
-
-            </li>                                  
-                    </ul>
-                </div>
+             
 
               </td>
-              <?php if($vta['estado'] != 'Error_factura' && $vta['estado'] != 'Cancelado'){?>
-              <?php $TotalRecaudado = $TotalRecaudado + $vta['total_venta']; ?>
-              <?php } ?> 
+              
             </tr>
          <?php endforeach; ?>
          <?php endif; ?>
        
      </table>
-     <!-- Recaudacion de Ventas (Todas o por filtro)-->
+     <!-- Recaudacion de Ventas (Todas o por filtro)
      <h2 class="estiloTurno textColor">Total Recaudado: $ <?php echo $TotalRecaudado ?> (No se suman las Canceladas)</h2>
-     <br>
+     <br> -->
   </div>
 </div>
 </section>

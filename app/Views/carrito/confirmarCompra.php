@@ -8,6 +8,16 @@
         }, 3000);
     </script>
 <?php endif; ?>
+<?php if (session()->getFlashdata('msg')): ?>
+        <div id="flash-message" class="flash-message success">
+            <?= session()->getFlashdata('msg') ?>
+        </div>
+    <?php endif; ?>   
+    <script>
+        setTimeout(function() {
+            document.getElementById('flash-message').style.display = 'none';
+        }, 3000); // 3000 milisegundos = 3 segundos
+</script>
 
 <?php
 $cart = \Config\Services::cart(); 
@@ -81,7 +91,7 @@ endif;
                             <input type="hidden" name="id_cliente" value="<?= esc($id_cliente ?? '') ?>">
                         <?php else: ?>
                             <input class="selector" type="text" name="nombre_prov" id="nombreCliente" 
-                                placeholder="Ingrese nombre cliente" maxlength="30" required 
+                                placeholder="Ingrese nombre cliente" maxlength="30" required
                                 value="<?= esc($nombre_cliente ?? '') ?>" list="clientesList" autocomplete="off">
 
                             <input type="hidden" name="id_cliente" id="idClienteSeleccionado" value="<?= esc($id_cliente ?? '') ?>">
@@ -110,8 +120,12 @@ endif;
                 <td style="color: rgb(192, 250, 214);"><strong>Modo de Compra:</strong></td>
                 <td>
                     <select name="modo_compra" id="tipoCompra" class="selector">
+                        <?php if($modo_compra != ''){ ?>
+                        <option value="Compra" <?= ($modo_compra == 'Compra' || empty($modo_compra)) ? 'selected' : '' ?>>Compra</option>
+                        <?php } else { ?>
                         <option value="Compra" <?= ($modo_compra == 'Compra' || empty($modo_compra)) ? 'selected' : '' ?>>Compra</option>
                         <option value="Fiado" <?= ($modo_compra == 'Fiado') ? 'selected' : '' ?>>Fiado</option>
+                        <?php } ?>
                     </select>                    
                 </td>
                 </tr>    
