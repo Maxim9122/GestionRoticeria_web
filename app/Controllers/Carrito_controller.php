@@ -14,6 +14,8 @@ Use App\Models\Clientes_model;
 use App\Models\Usuarios_model;
 use App\Models\Cae_model;
 Use App\Models\categoria_model;
+use App\Libraries\Escpos\Escpos;
+use Mike42\Escpos\Printer;
 
 
 class Carrito_controller extends Controller{
@@ -584,11 +586,9 @@ public function generarTicket($id_cabecera)
     
     // Obtener los detalles de la venta
     $cabecera = $ventaModel->find($id_cabecera);
-    
     $detalles = $detalleModel->where('venta_id', $id_cabecera)->findAll();
-    //print_r($detalles);
-    //exit;
-    // Obtener los productos relacionados
+    
+    // Agrupar productos por categoría
     $productosAgrupados = [
         'planchero' => [],
         'horno_otros' => [],
@@ -599,164 +599,139 @@ public function generarTicket($id_cabecera)
         $categoria = $categoriaModel->find($producto['categoria_id']);
     
         if (in_array(strtolower($categoria['descripcion']), ['hamburguesas', 'lomitos', 'papas_f', 'sand_mila', 'hamburpizzas'])) {
-            $productosAgrupados['planchero'][] = [
-                'detalle' => $detalle,
-                'producto' => $producto
-            ];
+            $productosAgrupados['planchero'][] = ['detalle' => $detalle, 'producto' => $producto];
         } elseif (in_array(strtolower($categoria['descripcion']), ['pizzas', 'empanadas','empanadas_mixtas','milas_papas', 'tostados jyq'])) {
-            $productosAgrupados['horno_otros'][] = [
-                'detalle' => $detalle,
-                'producto' => $producto
-            ];
+            $productosAgrupados['horno_otros'][] = ['detalle' => $detalle, 'producto' => $producto];
         }
     }
-    
 
-    // Obtener la información del cliente
+    // Datos del cliente y vendedor
     $cliente = $clienteModel->find($cabecera['id_cliente']);
-
-    // Obtener el nombre del vendedor desde la sesión
     $session = session();
     $nombreVendedor = $session->get('nombre');
-    
-    // Crear el HTML para la vista previa
+
+    // Crear el HTML del ticket
     ob_start();
     ?>
     <html>
     <head>
-    <style>
-            /* Estilos CSS para el ticket */
-            body {
-                font-family: Arial, sans-serif; /* Cambiar a una fuente más legible */
+        <style>
+            @page {
                 margin: 0;
                 padding: 0;
-                width: 145px; /* Ancho del ticket */
+            }
+            body {
+                font-family: Arial, sans-serif;
+                margin: 5px;
+                padding: 0;
+                width: 125px;
             }
             .ticket {
                 width: 100%;
-                font-size: 12px; /* Ajustar tamaño de fuente */
+                font-size: 12px;
             }
-            h1 {
-                font-size: 15px;
+            h1, h2, h3 {
                 text-align: center;
                 margin: 3px 0;
                 font-weight: bold;
             }
-            h3 {
-                text-align: center;
-                margin: 3px 0;
-                font-weight: bold;
-            }
+            h1 { font-size: 12px; }
+            h2 { font-size: 11px; margin-top: 8px; }
+            h3 { font-size: 10px; }
             .ticket p {
                 margin: 2px 0;
-                font-size: 10px;
+                font-size: 9px;
                 font-weight: bold;
-                text-align: justify; /* Justificar el texto */
+                text-align: justify;
             }
             .ticket hr {
-                border: 0.5px solid #000;
+                border: 1px solid #000;
                 margin: 5px 0;
-            }
-            .ticket .header,
-            .ticket .footer {
-                text-align: center;
-                font-size: 10px;
-            }
-            .ticket .details {
-                margin-top: 3px;
-                font-size: 10px;
-            }
-            .ticket .details td {
-                padding: 0px;
-            }
-            .ticket .details th {
-                text-align: left;
-                padding-right: 5px;
             }
         </style>
     </head>
     <body>
-        <div class="ticket">             
-
-        <!-- Sección PLANCHERO -->
-        <?php if (!empty($productosAgrupados['planchero'])): ?>
-            <h1>Pedido Nro: <?= $cabecera['id'] ?></h1>  
-            <h2>PLANCHERO</h2>
-            <?php foreach ($productosAgrupados['planchero'] as $item): ?>
-                <p><?= $item['producto']['nombre'] ?> -> Cant:<?= $item['detalle']['cantidad'] ?> </p>
-                <?php if (!empty($item['detalle']['aclaraciones'])): ?>
-                    <p style="margin-left: 5px;">* <?= $item['detalle']['aclaraciones'] ?></p>
-                <?php endif; ?>
-                <hr>
-            <?php endforeach; ?>
-        <?php endif; ?>
-
-
-        <!-- Sección HORNO/OTROS -->
-        <?php if (!empty($productosAgrupados['horno_otros'])): ?>
-            <h1 style="margin-top:50px;">Pedido Nro: <?= $cabecera['id'] ?></h1>
-            <h2>HORNO/OTROS</h2>
-            <?php foreach ($productosAgrupados['horno_otros'] as $item): ?>
-                <p><?= $item['producto']['nombre'] ?> -> Cant:<?= $item['detalle']['cantidad'] ?></p>
-                <?php if (!empty($item['detalle']['aclaraciones'])): ?>
-                    <p style="margin-left: 5px;">* <?= $item['detalle']['aclaraciones'] ?></p>
-                <?php endif; ?>
-                <hr>
-            <?php endforeach; ?>
-        <?php endif; ?>
-   
+        <div class="ticket">            
             
+            <!-- Sección PLANCHERO -->
+            <?php if (!empty($productosAgrupados['planchero'])): ?>
+                <br><br><br><br>
+                <h2>PLANCHERO</h2>
+                <p>Pedido N°: <?= $cabecera['id'] ?></p>
+                <?php foreach ($productosAgrupados['planchero'] as $item): ?>
+                    <p><?= substr($item['producto']['nombre'], 0, 30) ?> - Cant: <?= $item['detalle']['cantidad'] ?></p>
+                    <?php if (!empty($item['detalle']['aclaraciones'])): ?>
+                        <p style="margin-left: 5px;">* <?= substr($item['detalle']['aclaraciones'], 0, 30) ?></p>
+                    <?php endif; ?>
+                    <hr>
+                <?php endforeach; ?>
+                <br>
+            <?php endif; ?>
+                        
+            <!-- Sección HORNO/OTROS -->
+            <?php if (!empty($productosAgrupados['horno_otros'])): ?>
+                <br><br><br><br><br><br>
+                <h2>HORNO / OTROS</h2>
+                <p>Pedido N°: <?= $cabecera['id'] ?></p>
+                <?php foreach ($productosAgrupados['horno_otros'] as $item): ?>
+                    <p><?= substr($item['producto']['nombre'], 0, 30) ?> - Cant: <?= $item['detalle']['cantidad'] ?></p>
+                    <?php if (!empty($item['detalle']['aclaraciones'])): ?>
+                        <p style="margin-left: 5px;">* <?= substr($item['detalle']['aclaraciones'], 0, 30) ?></p>
+                    <?php endif; ?>
+                    <hr>
+                <?php endforeach; ?>
+                <br>
+            <?php endif; ?>            
         </div>
     </body>
     </html>
-
     <?php
 
-    // Generar el PDF
+    // Renderizar el PDF
     $html = ob_get_clean();
     $dompdf = new \Dompdf\Dompdf();
+
+    $options = $dompdf->getOptions();
+    $options->set('defaultPaperSize', '70mm');
+    $options->set('isPhpEnabled', true);
+    $options->set('isRemoteEnabled', true);
+    $options->set('isHtml5ParserEnabled', true);
+    $options->set('dpi', 72);
+    $dompdf->setOptions($options);
+    $dompdf->setPaper([0, 0, 198, 500], 'custom');
+
     $dompdf->loadHtml($html);
     $dompdf->render();
-    
-    // Guardar el archivo PDF en un archivo temporal
-    $output = $dompdf->output();
-    $tempFolder = 'path/to/temp/folder';  // Ruta de la carpeta temporal
-    $tempFile = $tempFolder . '/ticket.pdf';  // Ruta completa del archivo PDF
-    
-    // Crear la carpeta si no existe
-    if (!is_dir($tempFolder)) {
-        mkdir($tempFolder, 0777, true);  // Crea la carpeta con permisos 0777 (lectura, escritura y ejecución)
-    }
-    
-    // Guardar el archivo PDF en la carpeta temporal
-    file_put_contents($tempFile, $output);
-    
-     // Obtener el perfil del usuario desde la sesión
-    $perfil = session()->get('perfil_id');
-    
-    // Redirigir a una página de confirmación con JavaScript
-    echo "<script type='text/javascript'>
-            // Descargar el archivo PDF
-            window.location.href = '" . base_url('descargar_ticket') . "';
-            
-            // Pasar el valor de perfil desde PHP a JavaScript
-            var perfil = " . $perfil . "; // Asignar el perfil de PHP a la variable JS
-            
-            // Redirigir a la página deseada después de la descarga dependiendo del perfil usuario
-            window.setTimeout(function() {
-                if (perfil == 1) {
-                    window.location.href = '" . base_url('compras') . "'; // Redirigir al perfil 1
-                } else if (perfil == 2) {
-                    window.location.href = '" . base_url('catalogo') . "'; // Redirigir al perfil 2
-                } else {
-                    window.location.href = '" . base_url('home') . "'; // Redirigir por defecto si no es perfil 1 ni 2
-                }
-            }, 500);  // 0.5 segundo de espera para asegurar que la descarga termine
-          </script>";
-    exit;
 
-   
+    // Guardar PDF
+    $output = $dompdf->output();
+    $tempFolder = 'path/to/temp/folder';
+    $tempFile = $tempFolder . '/ticket.pdf';
+
+    if (!is_dir($tempFolder)) {
+        mkdir($tempFolder, 0777, true);
+    }
+
+    file_put_contents($tempFile, $output);
+
+    // Redirección
+    $perfil = session()->get('perfil_id');
+    echo "<script type='text/javascript'>
+        window.location.href = '" . base_url('descargar_ticket') . "';
+        var perfil = " . $perfil . ";
+        setTimeout(function() {
+            if (perfil == 1) {
+                window.location.href = '" . base_url('compras') . "';
+            } else if (perfil == 2) {
+                window.location.href = '" . base_url('catalogo') . "';
+            } else {
+                window.location.href = '" . base_url('home') . "';
+            }
+        }, 500);
+    </script>";
+    exit;
 }
+
 
 // En tu ruta 'descargar_ticket', puedes usar:
 public function descargar_ticket()
@@ -769,7 +744,6 @@ public function descargar_ticket()
 }
 
 
-//Genera ticket venta normal
 public function generarTicketCliente($id_cabecera)
 {
     // Cargar los modelos necesarios
@@ -780,10 +754,8 @@ public function generarTicketCliente($id_cabecera)
     
     // Obtener los detalles de la venta
     $cabecera = $ventaModel->find($id_cabecera);
-    
     $detalles = $detalleModel->where('venta_id', $id_cabecera)->findAll();
-    //print_r($detalles);
-    //exit;
+
     // Obtener los productos relacionados
     $productos = [];
     foreach ($detalles as $detalle) {
@@ -804,18 +776,24 @@ public function generarTicketCliente($id_cabecera)
     <head>
         <style>
             /* Estilos CSS para el ticket */
-            body {
-                font-family: Arial, sans-serif; /* Cambiar a una fuente más legible */
+            @page {
                 margin: 0;
                 padding: 0;
-                width: 150px; /* Ancho del ticket */
+            }
+           /* Estilos CSS para el ticket */
+           body {
+                font-family: Arial, sans-serif; /* Cambiar a una fuente más legible */
+                margin: 5px;
+                margin-bottom: 20px;
+                padding: 0;
+                width: 125px; /* Ancho del ticket */
             }
             .ticket {
                 width: 100%;
                 font-size: 12px; /* Ajustar tamaño de fuente */
             }
             h1 {
-                font-size: 15px;
+                font-size: 12px;
                 text-align: center;
                 margin: 3px 0;
                 font-weight: bold;
@@ -827,12 +805,12 @@ public function generarTicketCliente($id_cabecera)
             }
             .ticket p {
                 margin: 2px 0;
-                font-size: 10px;
+                font-size: 9px;
                 font-weight: bold;
                 text-align: justify; /* Justificar el texto */
             }
             .ticket hr {
-                border: 0.5px solid #000;
+                border: 1px solid #000;
                 margin: 5px 0;
             }
             .ticket .header,
@@ -842,7 +820,7 @@ public function generarTicketCliente($id_cabecera)
             }
             .ticket .details {
                 margin-top: 3px;
-                font-size: 10px;
+                font-size: 8px;
             }
             .ticket .details td {
                 padding: 0px;
@@ -855,37 +833,43 @@ public function generarTicketCliente($id_cabecera)
     </head>
     <body>
         <div class="ticket">
-            <h3>Remito</h3>
-            <p style="text-align: center;">no valido como factura</p>
+            <h3>REMITO</h3>
+            <p style="text-align:center;">No válido como factura</p>
+            
             <!-- Cabecera del ticket -->
             <h1>SAN VICENTE HAMBURGUESERIA</h1>                       
-            <p>Domicilio: Calle Pedro Esnaola 5367, Corrientes (3400)</p>
-            <p>Cel: 3795-033970</p>            
+            <p>Domicilio: Calle Pedro Esnaola 5367</p>
+            <p>Corrientes (3400) - Cel: 3795-033970</p>            
             <hr>
+            
             <!-- Información de la venta -->
             <p>Fecha: <?= ($cabecera['tipo_compra'] == 'Pedido') ? date('d-m-Y H:i:s') : $cabecera['fecha'] . ' ' . $cabecera['hora']; ?></p>
-            <p>Numero de Ticket: <?= $cabecera['id'] ?></p>
-            <p>Cliente: <?= $cabecera['nombre_prov_client'] ?></p>
-            <p>Atendido por: <?= $nombreVendedor ?></p>
+            <p>Ticket N°: <?= $cabecera['id'] ?></p>
+            <p>Cliente: <?= substr($cabecera['nombre_prov_client'], 0, 30) ?></p> <!-- Limita caracteres -->
+            <p>Atendido por: <?= substr($nombreVendedor, 0, 20) ?></p> <!-- Limita caracteres -->
             <hr>
 
             <!-- Detalle de la compra -->
-            <div class="details" style="width: 100%; font-size: 10px;">
-                <h3>Detalle de la Compra</h3>
+            <div class="details">
+                <h3>DETALLE DE COMPRA</h3>
                 <?php foreach ($detalles as $detalle): ?>
                     <div>
-                        <p><?= $productos[$detalle['producto_id']]['nombre'] ?> Cant:<?= $detalle['cantidad'] ?> x $<?= number_format($detalle['precio'], 2) ?></p>
+                        <p class="product-name">
+                            <?= substr($productos[$detalle['producto_id']]['nombre'], 0, 30) ?> <!-- Limita caracteres -->
+                            <?= $detalle['cantidad'] ?>x$<?= number_format($detalle['precio'], 2) ?>
+                        </p>
                         <?php if (!empty($detalle['aclaraciones'])): ?>
-                            <p style="margin-left: 5px;">* <?= $detalle['aclaraciones'] ?></p>
+                            <p class="product-details">* <?= substr($detalle['aclaraciones'], 0, 30) ?></p> <!-- Limita caracteres -->
                         <?php endif; ?>
-                        <hr>
                     </div>
+                    <hr>
                 <?php endforeach; ?>            
             </div>
-            <hr>        
+            <hr>
             <p>Total: $<?= number_format($cabecera['total_venta'], 2) ?></p>
             <hr>
-            <h3>Gracias por Elegirnos.!</h3>
+            <h3>¡GRACIAS POR ELEGIRNOS!</h3>
+            
         </div>
     </body>
     </html>
@@ -894,48 +878,53 @@ public function generarTicketCliente($id_cabecera)
     // Generar el PDF
     $html = ob_get_clean();
     $dompdf = new \Dompdf\Dompdf();
+    
+    // Configuración específica para impresora térmica
+    $options = $dompdf->getOptions();
+    $options->set('defaultPaperSize', '70mm');
+    $options->set('isPhpEnabled', true);
+    $options->set('isRemoteEnabled', true);
+    $options->set('isHtml5ParserEnabled', true);
+    $options->set('dpi', 72);
+    $dompdf->setOptions($options);
+    
+    // Configurar papel sin márgenes (ancho en puntos: 70mm ≈ 198 puntos)
+    $dompdf->setPaper([0, 0, 198, 500], 'custom');
+    
     $dompdf->loadHtml($html);
     $dompdf->render();
-    
+
     // Guardar el archivo PDF en un archivo temporal
     $output = $dompdf->output();
-    $tempFolder = 'path/to/temp/folder';  // Ruta de la carpeta temporal
-    $tempFile = $tempFolder . '/ticket.pdf';  // Ruta completa del archivo PDF
+    $tempFolder = 'path/to/temp/folder';
+    $tempFile = $tempFolder . '/ticket.pdf';
     
-    // Crear la carpeta si no existe
     if (!is_dir($tempFolder)) {
-        mkdir($tempFolder, 0777, true);  // Crea la carpeta con permisos 0777 (lectura, escritura y ejecución)
+        mkdir($tempFolder, 0777, true);
     }
     
-    // Guardar el archivo PDF en la carpeta temporal
     file_put_contents($tempFile, $output);
     
-     // Obtener el perfil del usuario desde la sesión
+    // Obtener el perfil del usuario desde la sesión
     $perfil = session()->get('perfil_id');
     
     // Redirigir a una página de confirmación con JavaScript
     echo "<script type='text/javascript'>
-            // Descargar el archivo PDF
             window.location.href = '" . base_url('descargar_ticket') . "';
             
-            // Pasar el valor de perfil desde PHP a JavaScript
-            var perfil = " . $perfil . "; // Asignar el perfil de PHP a la variable JS
+            var perfil = " . $perfil . ";
             
-            // Redirigir a la página deseada después de la descarga dependiendo del perfil usuario
             window.setTimeout(function() {
                 if (perfil == 1) {
-                    window.location.href = '" . base_url('compras') . "'; // Redirigir al perfil 1
+                    window.location.href = '" . base_url('compras') . "';
                 } else if (perfil == 2) {
-                    window.location.href = '" . base_url('catalogo') . "'; // Redirigir al perfil 2
+                    window.location.href = '" . base_url('catalogo') . "';
                 } else {
-                    window.location.href = '" . base_url('home') . "'; // Redirigir por defecto si no es perfil 1 ni 2
+                    window.location.href = '" . base_url('home') . "';
                 }
-            }, 500);  // 0.5 segundo de espera para asegurar que la descarga termine
+            }, 500);
           </script>";
     exit;
-
-    
-   
 }
 
 //Verifica que todo este bien para Facturar
