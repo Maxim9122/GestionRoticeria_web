@@ -122,9 +122,10 @@
           <?php endif; ?>
   
   
-  
-            </li>
-          
+          <li class="nnavItem">
+          <a class="btn signUp" href="<?php echo base_url('propinas');?>">Propinas</a>
+          </li>
+        </li>          
           <li class="nnavItem">
             <a href="<?= base_url('/catalogo')?>" class="btn">Productos</a>
           </li>
