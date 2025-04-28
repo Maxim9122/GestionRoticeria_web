@@ -207,7 +207,7 @@ public function conteoComida(){
         }
         $filtros = [
             'estado' => 'Pendiente',
-            'fecha_hoy' => date('d-m-Y'), 
+            'fecha_hoy' => '', 
         ];
         
         // Instanciar el modelo

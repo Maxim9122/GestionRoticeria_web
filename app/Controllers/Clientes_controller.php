@@ -126,7 +126,7 @@ class Clientes_controller extends Controller{
         $id = $this->request->getVar('id');
         $clienteModel = new Clientes_model();
     
-        if (!$input) {
+        if (!$rules) {
             $data = $clienteModel->getCliente($id);
             $data['titulo'] = 'Editar Cliente'; 
             echo view('navbar/navbar');

@@ -30,7 +30,7 @@
   
   <div>
        <label for="exampleFormControlInput1">Teléfono</label>
-   <input name="telefono"  type="text"  placeholder="Telefono" required
+   <input name="telefono"  type="text"  placeholder="Telefono" 
    minlength="10" maxlength="10"
     
     oninput="this.value = this.value.replace(/[^0-9]/g, '')" value="<?php echo $data['telefono']?>" >
@@ -44,9 +44,8 @@
 
   <div>
        <label for="exampleFormControlInput1">Cuil</label>
-   <input name="cuil"  type="text"  placeholder="Cuil" required
+   <input name="cuil"  type="text"  placeholder="Cuil" 
     minlength="11" maxlength="11"
-    pattern="[0-9]{11}"
     oninput="this.value = this.value.replace(/[^0-9]/g, '')" value="<?php echo $data['cuil']?>">
     <!-- Error -->
         <?php if($validation->getError('cuil')) {?>

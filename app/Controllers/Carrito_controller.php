@@ -593,14 +593,14 @@ public function generarTicket($id_cabecera)
         'planchero' => [],
         'horno_otros' => [],
     ];
-    
+    $nom_cliente = $cabecera['nombre_prov_client'];
     foreach ($detalles as $detalle) {
         $producto = $productoModel->find($detalle['producto_id']);
         $categoria = $categoriaModel->find($producto['categoria_id']);
     
         if (in_array(strtolower($categoria['descripcion']), ['hamburguesas', 'lomitos', 'papas_f', 'sand_mila', 'hamburpizzas'])) {
             $productosAgrupados['planchero'][] = ['detalle' => $detalle, 'producto' => $producto];
-        } elseif (in_array(strtolower($categoria['descripcion']), ['pizzas', 'empanadas','empanadas_mixtas','milas_papas', 'tostados jyq'])) {
+        } elseif (in_array(strtolower($categoria['descripcion']), ['pizzas', 'empanadas','empanadas_mixtas','milas_papas', 'tostados jyq', 'milanesas', 'panchos'])) {
             $productosAgrupados['horno_otros'][] = ['detalle' => $detalle, 'producto' => $producto];
         }
     }
@@ -657,7 +657,7 @@ public function generarTicket($id_cabecera)
             <?php if (!empty($productosAgrupados['planchero'])): ?>
                 <br><br><br><br>
                 <h2>PLANCHERO</h2>
-                <p>Pedido N°: <?= $cabecera['id'] ?></p>
+                <p>Pedido N°: <?= $cabecera['id'] ?></p> <h2><?= substr($cabecera['nombre_prov_client'], 0, 30) ?></h2>
                 <?php foreach ($productosAgrupados['planchero'] as $item): ?>
                     <p><?= substr($item['producto']['nombre'], 0, 30) ?> - Cant: <?= $item['detalle']['cantidad'] ?></p>
                     <?php if (!empty($item['detalle']['aclaraciones'])): ?>
@@ -672,7 +672,7 @@ public function generarTicket($id_cabecera)
             <?php if (!empty($productosAgrupados['horno_otros'])): ?>
                 <br><br><br><br><br><br>
                 <h2>HORNO / OTROS</h2>
-                <p>Pedido N°: <?= $cabecera['id'] ?></p>
+                <p>Pedido N°: <?= $cabecera['id'] ?></p> <h2><?= substr($cabecera['nombre_prov_client'], 0, 30) ?></h2>
                 <?php foreach ($productosAgrupados['horno_otros'] as $item): ?>
                     <p><?= substr($item['producto']['nombre'], 0, 30) ?> - Cant: <?= $item['detalle']['cantidad'] ?></p>
                     <?php if (!empty($item['detalle']['aclaraciones'])): ?>
