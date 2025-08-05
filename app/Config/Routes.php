@@ -108,6 +108,7 @@ $routes->get('/eliminados', 'Usuario_controller::usuariosEliminados');
 
 
 //Rutas del ADMIN (Productos)
+$routes->post('/EdicionRapidaProd', 'Producto_controller::EdicionRapidaProd');
 $routes->get('/nuevoProducto', 'Producto_controller::nuevoProducto');
 $routes->post('/ProductoValidation', 'Producto_controller::ProductoValidation');
 $routes->get('/Lista_Productos', 'Producto_controller::ListaProductos');

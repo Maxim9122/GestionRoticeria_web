@@ -11,7 +11,63 @@ class Producto_controller extends Controller{
 
 	}
 
-
+    public function EdicionRapidaProd() {
+        $model = new Productos_model();
+        $id = $this->request->getPost('id_prod');
+        
+        // Obtener el producto actual primero
+        $productoActual = $model->find($id);
+        
+        if (!$productoActual) {
+            session()->setFlashdata('msgEr', 'Producto no encontrado');
+            return redirect()->to(base_url('Lista_Productos'));
+        }
+        
+        // Preparar datos para actualización
+        $data = [];
+        $hayCambios = false;
+        
+        // Validar y actualizar precio
+        if ($this->request->getPost('precio') !== null && $this->request->getPost('precio') !== '') {
+            $nuevoPrecio = (float)$this->request->getPost('precio');
+            if ($nuevoPrecio != $productoActual['precio']) {
+                $data['precio'] = $nuevoPrecio;
+                $hayCambios = true;
+            }
+        }
+        
+        // Validar y actualizar precio_vta
+        if ($this->request->getPost('precio_vta') !== null && $this->request->getPost('precio_vta') !== '') {
+            $nuevoPrecioVta = (float)$this->request->getPost('precio_vta');
+            if ($nuevoPrecioVta != $productoActual['precio_vta']) {
+                $data['precio_vta'] = $nuevoPrecioVta;
+                $hayCambios = true;
+            }
+        }
+        
+        // Validar y actualizar stock
+        if ($this->request->getPost('stock') !== null && $this->request->getPost('stock') !== '') {
+            $nuevoStock = (int)$this->request->getPost('stock');
+            if ($nuevoStock != $productoActual['stock']) {
+                $data['stock'] = $nuevoStock;
+                $hayCambios = true;
+            }
+        }
+        
+        // Actualizar solo si hay cambios
+        if ($hayCambios) {
+            try {
+                $model->updateDatosProd($id, $data);
+                session()->setFlashdata('msg', 'Producto actualizado correctamente');
+            } catch (\Exception $e) {
+                session()->setFlashdata('msgEr', 'Error al actualizar: ' . $e->getMessage());
+            }
+        } else {
+            session()->setFlashdata('msg', 'No se realizaron cambios');
+        }
+        
+        return redirect()->to(base_url('Lista_Productos'));
+    }
 
 	public function nuevoProducto(){
         $session = session();

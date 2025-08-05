@@ -75,7 +75,7 @@
 <!-- Recaudacion de Ventas (Todas o por filtro)-->
   
   <br><br>
-  <?php $Recaudacion = 0; ?>
+  <?php $Recaudacion = 0; $Rec_envios = 0; ?>
   <table class="table table-responsive table-hover" id="users-list">
        <thead>
           <tr class="colorTexto2">
@@ -144,6 +144,7 @@
               </td>
               <?php if($vta['estado'] != 'Error_factura' && $vta['estado'] != 'Cancelado'){?>
               <?php $TotalRecaudado = $TotalRecaudado + $vta['total_venta']; ?>
+              <?php $Rec_envios = $Rec_envios + $vta['costo_envio'];?>
               <?php } ?> 
             </tr>
          <?php endforeach; ?>
@@ -151,7 +152,7 @@
        
      </table>
      <!-- Recaudacion de Ventas (Todas o por filtro)-->
-     <h2 class="estiloTurno textColor">Total Recaudado: $ <?php echo $TotalRecaudado ?> (No se suman las Canceladas)</h2>
+     <h2 class="estiloTurno textColor">Total Recaudado: $<?php echo $TotalRecaudado ?> Total Envios: $<?php echo $Rec_envios ?>  (No se suman las Canceladas)</h2>
      <br>
   </div>
 </div>

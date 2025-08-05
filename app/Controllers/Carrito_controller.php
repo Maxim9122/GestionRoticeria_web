@@ -865,8 +865,11 @@ public function generarTicketCliente($id_cabecera)
                     <hr>
                 <?php endforeach; ?>            
             </div>
-            <hr>
+            <hr>            
             <p>Total: $<?= number_format($cabecera['total_venta'], 2) ?></p>
+            <?php if ($cabecera['costo_envio'] > 0) { ?>
+            <p>Costo Envío: $<?= number_format($cabecera['costo_envio'], 2) ?></p>
+            <?php } ?>
             <hr>
             <h3>¡GRACIAS POR ELEGIRNOS!</h3>
             

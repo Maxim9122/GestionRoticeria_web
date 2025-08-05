@@ -98,7 +98,8 @@ class Cabecera_model extends Model
             ELSE u.fecha 
         END) AS fecha, 
         u.hora AS hora, 
-        u.tipo_pago            
+        u.tipo_pago,
+        u.costo_envio          
     ");
     $builder->join('cliente c', 'u.id_cliente = c.id_cliente');
     $builder->join('usuarios v', 'u.id_usuario = v.id');
