@@ -38,6 +38,7 @@ class Carrito_controller extends Controller{
     
     // Llamar al método del modelo para obtener las ventas con clientes
     $datos['ventas'] = $cabeceraModel->getVentasConClientes();
+    $datos['ventas'] = array_slice($datos['ventas'], 0, 150);
     $datos2['usuarios'] = $USmodel->getUsBaja('NO');
     $datos3['clientes'] = $Cliente_Model->getClientes();
     // Pasar el título y los datos a las vistas
