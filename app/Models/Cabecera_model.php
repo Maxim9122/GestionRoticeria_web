@@ -79,8 +79,8 @@ class Cabecera_model extends Model
     }
     
 
-    public function getVentasConClientes($filtros = [])
-{
+   public function getVentasConClientes($filtros = [])
+    {
     // Conectarse a la base de datos
     $db = db_connect();
     
@@ -92,12 +92,9 @@ class Cabecera_model extends Model
         v.nombre AS nombre_vendedor, 
         u.estado, 
         u.total_venta,
-        u.modo_compra,
-        (CASE 
-            WHEN u.tipo_compra = 'Pedido' THEN u.fecha_pedido 
-            ELSE u.fecha 
-        END) AS fecha, 
-        u.hora AS hora, 
+        u.modo_compra,      
+        u.fecha_pedido AS fecha, 
+        u.hora_entrega AS hora, 
         u.tipo_pago,
         u.costo_envio          
     ");
@@ -114,34 +111,25 @@ class Cabecera_model extends Model
         $builder->where('u.estado', $filtros['estado']);
     }
 
+    // Filtro por fecha DESDE
     if (!empty($filtros['fecha_desde'])) {
         $fechaDesde = date('Y-m-d', strtotime($filtros['fecha_desde']));
         $horaDesde = !empty($filtros['hora_desde']) ? $filtros['hora_desde'] : '00:00';
         $desdeCompleto = $fechaDesde . ' ' . $horaDesde . ':00';
-    
-        $builder->where("
-            STR_TO_DATE(CONCAT(
-                CASE 
-                    WHEN u.tipo_compra = 'Pedido' THEN u.fecha_pedido 
-                    ELSE u.fecha 
-                END, ' ', u.hora_entrega), '%d-%m-%Y %H:%i') >= ", $desdeCompleto);
+
+        $builder->where("STR_TO_DATE(CONCAT(u.fecha_pedido, ' ', u.hora_entrega), '%d-%m-%Y %H:%i') >=", $desdeCompleto);
     }
     
+    // Filtro por fecha HASTA
     if (!empty($filtros['fecha_hasta'])) {
         $fechaHasta = date('Y-m-d', strtotime($filtros['fecha_hasta']));
         $horaHasta = !empty($filtros['hora_hasta']) ? $filtros['hora_hasta'] : '23:59';
         $hastaCompleto = $fechaHasta . ' ' . $horaHasta . ':59';
-    
-        $builder->where("
-            STR_TO_DATE(CONCAT(
-                CASE 
-                    WHEN u.tipo_compra = 'Pedido' THEN u.fecha_pedido 
-                    ELSE u.fecha 
-                END, ' ', u.hora_entrega), '%d-%m-%Y %H:%i') <= ", $hastaCompleto);
+
+        $builder->where("STR_TO_DATE(CONCAT(u.fecha_pedido, ' ', u.hora_entrega), '%d-%m-%Y %H:%i') <=", $hastaCompleto);
     }
         
-
-    // 💡 Agregamos el filtro por cliente
+    // Filtro por cliente
     if (!empty($filtros['id_cliente'])) {
         $builder->where('u.id_cliente', $filtros['id_cliente']);
     }
@@ -149,7 +137,7 @@ class Cabecera_model extends Model
     // Ejecutar la consulta y retornar el resultado como array
     $ventas = $builder->get();
     return $ventas->getResultArray();
-}
+    }
 
     
 

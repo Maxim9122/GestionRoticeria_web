@@ -456,6 +456,9 @@ public function guarda_compra($id_pedido = null)
     $hora = date('H:i:s');
     $fecha = date('d-m-Y');
 
+    $horaOK = date('H:i:s');
+    $fechaOK = date('d-m-Y');
+
     $tipo_compra = 'Pedido';
     $modo_compra = $this->request->getVar('modo_compra');
     $fecha_pedido = $this->request->getPost('fecha_pedido_input');
@@ -477,7 +480,8 @@ if ($session->get('estado') == 'Cobrando') {
     $cabecera_model->update($id_pedido_mod, [
         'fecha'        => $fecha,
         'hora'         => $hora,
-        'fecha_pedido' => $fecha,
+        'fecha_pedido' => $fechaOK,
+        'hora_entrega' => $horaOK,
         'id_cliente'   => $id_cliente,
         'nombre_prov_client' => $nombre_cliente,
         'id_usuario'   => $id_usuario,
