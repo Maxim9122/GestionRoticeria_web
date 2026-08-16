@@ -106,7 +106,24 @@ function cerrarMensaje() {
 </form>
 
     </section>
+
+    <form method="get" action="<?= base_url('catalogo') ?>" class="busqueda-form-derecha">
+    <?php $request = \Config\Services::request(); ?>
+    <input type="text" name="search" value="<?= esc($request->getGet('search')) ?>" placeholder="Buscar productos..." class="busqueda-input" autofocus>
+    <button type="submit" class="busqueda-btn">Buscar</button>
+    </form>
+    <script>
+    window.addEventListener('DOMContentLoaded', function() {
+        const input = document.querySelector('.busqueda-input');
+        if (input) {
+            input.focus();
+            input.setSelectionRange(input.value.length, input.value.length); // Opcional: pone el cursor al final
+        }
+    });
+    </script>
+
  <?php } ?> 
+ <?php if (isset($pager)): ?>
   <table class="" id="users-list">
    <thead>
       <tr class="colorTexto2">
@@ -172,9 +189,12 @@ function cerrarMensaje() {
          </td>
          
       </tr>
-      <?php endforeach; ?>
+      <?php endforeach; ?>      
       <?php endif; ?>
    </tbody>
+   <div class="paginacion-productos">
+   <?= $pager->links() ?>
+   <?php endif; ?>
 </table>
      <br>
   </div>
@@ -230,75 +250,148 @@ document.addEventListener("DOMContentLoaded", function() {
 <script type="text/javascript" src="<?php echo base_url('./assets/js/jquery.dataTables.min.js');?>"></script>
 
 <script>
-    
-    $(document).ready(function () {
-    // Inicializar DataTables
+
+$(document).ready(function () {
+
     $('#users-list').DataTable({
 
-        "stateSave": true, // Habilitar el guardado del estado
+        "paging": false,
+        "info": false,
+        "searching": false,
+        "ordering": false,
+        "stateSave": true,
 
         "language": {
-            "lengthMenu": "Mostrar _MENU_ registros por página.",
-            "zeroRecords": "Lo sentimos! No hay resultados.",
-            "info": "Mostrando la página _PAGE_ de _PAGES_",
-            "infoEmpty": "No hay registros disponibles.",
-            "infoFiltered": "(filtrado de _MAX_ registros totales)",
-            "search": "Buscar: ",
-            "paginate": {
-                "next": "Siguiente",
-                "previous": "Anterior"
-            }
-        },
-        initComplete: function () {
-            // Cambiar el texto del placeholder en el input de búsqueda
-            $('#users-list_filter input').attr('placeholder', 'Nombre, Categoría, etc...');
-
-            // Enfocar el campo de búsqueda de la tabla después de inicializar DataTables
-            $('#users-list_filter input').focus();
+            "zeroRecords": "Lo sentimos! No hay resultados."
         }
     });
 
     // Deshabilitar autofocus en el campo de código de barras
     document.getElementById('product_input').removeAttribute('autofocus');
+
 });
 
 </script>
+
 <style>
-  
-/* Mover el buscador a la derecha */
-.dataTables_filter {
-        display: flex;
-        justify-content: flex-end;
-        width: 100%;
+
+/* =========================
+   BUSCADOR PERSONALIZADO
+========================= */
+
+.busqueda-form-derecha{
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    gap:10px;
+    margin-bottom:15px;
+    flex-wrap:wrap;
+}
+
+.busqueda-input{
+    width:300px;
+    height:42px;
+    padding:0 12px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    font-size:16px;
+}
+
+.busqueda-btn{
+    height:42px;
+    padding:0 18px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+/* =========================
+   PAGINACION CODEIGNITER
+========================= */
+
+.paginacion-productos{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin-top:25px;
+    margin-bottom:25px;
+}
+
+.paginacion-productos ul{
+    display:flex;
+    list-style:none;
+    gap:10px;
+    padding:0;
+    margin:0;
+    flex-wrap:wrap;
+    justify-content:center;
+}
+
+.paginacion-productos li{
+    display:inline-block;
+}
+
+/* BOTONES */
+
+.paginacion-productos a,
+.paginacion-productos span{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-width:42px;
+    height:42px;
+    padding:0 14px;
+    border-radius:8px;
+    text-decoration:none;
+    border:1px solid #444;
+    background:#1f1f1f;
+    color:#fff;
+    font-weight:bold;
+    transition:all 0.25s ease;
+    box-shadow:0 2px 5px rgba(0,0,0,0.25);
+}
+
+/* HOVER */
+
+.paginacion-productos a:hover{
+    background:#ffffff;
+    color:#000;
+    transform:translateY(-2px);
+    box-shadow:0 4px 10px rgba(0,0,0,0.35);
+}
+
+/* PAGINA ACTIVA */
+
+.paginacion-productos .active span{
+    background:#ff9800;
+    color:#000;
+    border-color:#ff9800;
+    font-weight:bold;
+}
+
+/* RESPONSIVE */
+
+@media (max-width:768px){
+
+    .paginacion-productos{
+        justify-content:center;
     }
 
-    /* Mover el selector de "registros por página" a la derecha */
-    .dataTables_length {
-        text-align: right;
-        width: 100%;
+    .paginacion-productos ul{
+        gap:6px;
     }
 
-    .dataTables_length select {
-        display: inline-block;
-        margin: 0 auto;
+    .paginacion-productos a,
+    .paginacion-productos span{
+        min-width:38px;
+        height:38px;
+        font-size:14px;
+        padding:0 10px;
     }
 
-    /* Hacer el campo de búsqueda más largo y ancho */
-    .dataTables_filter input {
-        width: 300px; /* Ajusta el tamaño según sea necesario */
-        height: 55px; /* Ajusta la altura si lo deseas */
-        font-size: 24px; /* Tamaño de la fuente */
-        padding: 5px 10px; /* Añadir espacio dentro del campo */
-        border-radius: 5px; /* Bordes redondeados */
-        border: 1px solid #ccc; /* Borde gris claro */
-    }
-
-    /* Cambiar el color y hacer más nítida la letra del placeholder */
-    .dataTables_filter input::placeholder {
-        color: white; /* Cambiar a blanco */
-        opacity: 1; /* Asegura que el color del placeholder no sea opaco */
-        font-weight: bold; /* Hacer el texto más nítido */
-    }
+}
 
 </style>
 <script>

@@ -7,6 +7,48 @@ class Productos_model extends Model
     protected $primaryKey = 'id';
     protected $allowedFields = ['nombre','descripcion', 'imagen' ,'categoria_id', 'precio', 'precio_vta', 'stock','stock_min','eliminado', 'codigo_barra'];
 
+     // Agregamos método para paginar con condición
+    public function getProductosPaginados($eliminado = 'NO', $busqueda = null, $page = 1)
+{
+    if (empty($busqueda)) {
+        return [];
+    }
+
+    $builder = $this->where('eliminado', $eliminado);
+
+    if (!empty($busqueda)) {
+        $builder->groupStart()
+                ->like('nombre', $busqueda)
+                ->orLike('CAST(precio_vta AS CHAR)', $busqueda);
+        $builder->groupEnd();
+    }
+
+    return $builder->paginate(5);
+}
+
+    public function getPager()
+    {
+        return $this->pager;
+    }
+
+   
+    // Para búsqueda con paginación TODOS ordenados por nombre de A a Z
+    public function getProductosPaginadosTodos($eliminado = 'NO', $busqueda = null, $page = 1)
+    {
+        $builder = $this->where('eliminado', $eliminado)
+                        ->orderBy('nombre', 'ASC');
+
+        if (!empty($busqueda)) {
+            $builder->groupStart()
+                ->like('nombre', $busqueda)
+                ->orLike('CAST(precio_vta AS CHAR)', $busqueda); // Búsqueda parcial por precio
+                $builder->groupEnd();
+        }
+
+        return $builder->paginate(10, 'default', $page);
+    }
+    
+
     public function getProdBaja($eliminado){
 
     	return $this->where('eliminado',$eliminado)->findAll();
